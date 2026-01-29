@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Agent AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 h-screen flex flex-col items-center justify-center p-4">
+
+    <div
+        class="w-full max-w-2xl bg-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[80vh] border border-gray-700">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white">Math Agent</h1>
+                <p class="text-blue-100 text-sm opacity-80">Powered by Qwen 2.5 Coder</p>
+            </div>
+            <div class="bg-white/10 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-4 scroll-smooth">
+            <!-- Welcome Message -->
+            <div class="flex items-start">
+                <div
+                    class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">
+                    AI</div>
+                <div class="ml-3 bg-gray-700 p-3 rounded-lg rounded-tl-none max-w-[80%]">
+                    <p class="text-sm">Hello! I am your Math Agent. I can solve complex math problems step-by-step using
+                        tools. Try asking me "Calculate 5 plus 3 multiplied by 2".</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 bg-gray-800 border-t border-gray-700">
+            <form id="chat-form" class="flex items-center space-x-3">
+                <input type="text" id="user-input"
+                    class="flex-1 bg-gray-900 border border-gray-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 transition-all"
+                    placeholder="Type a math problem..." autocomplete="off">
+                <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl transition-colors shadow-lg shadow-blue-600/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9-2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+
+        function appendMessage(sender, text, isSteps = false) {
+            const div = document.createElement('div');
+            div.className = `flex items-start ${sender === 'User' ? 'justify-end' : ''}`;
+
+            let content = '';
+            if (sender === 'User') {
+                content = `
+                    <div class="mr-3 bg-blue-600 text-white p-3 rounded-lg rounded-tr-none max-w-[80%] shadow-lg">
+                        <p class="text-sm">${text}</p>
+                    </div>
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold">U</div>
+                `;
+            } else {
+                let innerContent = text;
+                if (isSteps) {
+                    innerContent = `<div class="space-y-1 text-xs font-mono text-gray-300 border-l-2 border-indigo-500 pl-2 mb-2">${text}</div>`;
+                } else {
+                    innerContent = `<p class="text-sm font-semibold">${text}</p>`;
+                }
+
+                content = `
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">AI</div>
+                    <div class="ml-3 bg-gray-700 p-3 rounded-lg rounded-tl-none max-w-[80%] shadow-md">
+                        ${innerContent}
+                    </div>
+                `;
+            }
+
+            div.innerHTML = content;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            appendMessage('User', message);
+            userInput.value = '';
+
+            // Show loading
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'flex items-start';
+            loadingDiv.innerHTML = `
+                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold">AI</div>
+                <div class="ml-3 bg-gray-700 p-4 rounded-lg rounded-tl-none">
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+
+                // Remove loading
+                chatContainer.removeChild(loadingDiv);
+
+                // Show steps if any
+                if (data.steps && data.steps.length > 0) {
+                    const stepsHtml = data.steps.map(step => `<span>→ ${step}</span>`).join('<br>');
+                    appendMessage('Agent', stepsHtml, true);
+                }
+
+                // Show final answer
+                if (data.final_answer) {
+                    appendMessage('Agent', data.final_answer);
+                }
+
+            } catch (error) {
+                chatContainer.removeChild(loadingDiv);
+                appendMessage('Agent', 'Sorry, something went wrong.');
+                console.error(error);
+            }
+        }
+
+        chatForm.addEventListener('submit', sendMessage);
+    </script>
+</body>
+
+</html>
