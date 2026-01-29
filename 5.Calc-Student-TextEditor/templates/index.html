@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Welcome</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Select a tool from the navigation menu above to manage your tasks efficiently.
+        Each tool is designed with simplicity and performance in mind.
+    </p>
+
+    <div style="display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+        <div
+            style="padding: 1.5rem; background: var(--bg-color); border-radius: 12px; border: 1px solid var(--border-color);">
+            <h3 style="margin-top: 0; color: var(--accent-color);">Calculator</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">A powerful RPN (Reverse Polish Notation)
+                calculator. Perfect for step-by-step arithmetic operations.</p>
+        </div>
+        <div
+            style="padding: 1.5rem; background: var(--bg-color); border-radius: 12px; border: 1px solid var(--border-color);">
+            <h3 style="margin-top: 0; color: var(--success-color);">Text Editor</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Simple state-managed text manipulation. Add,
+                remove, undo, and redo your changes endlessly.</p>
+        </div>
+        <div
+            style="padding: 1.5rem; background: var(--bg-color); border-radius: 12px; border: 1px solid var(--border-color);">
+            <h3 style="margin-top: 0; color: #f59e0b;">Student Manager</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Efficiently track student records. Add new
+                students, remove entries, or search the database.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

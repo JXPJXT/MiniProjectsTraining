@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Student Manager</h2>
+
+    {% if message %}
+    <div class="message">{{ message }}</div>
+    {% endif %}
+
+    <form method="POST" class="controls" style="gap: 1rem; flex-wrap: wrap;">
+        <input type="text" name="name" placeholder="Enter student name..." required autocomplete="off"
+            style="margin-bottom: 0; flex: 1; min-width: 200px;">
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" name="action" value="add" title="Add Student">Add</button>
+            <button type="submit" name="action" value="search" class="secondary" title="Search Student">Search</button>
+            <button type="submit" name="action" value="remove" class="secondary"
+                style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger-color);"
+                title="Remove Student">Remove</button>
+        </div>
+    </form>
+
+    <h3
+        style="margin-top: 2rem; color: var(--text-secondary); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">
+        Student Directory</h3>
+
+    {% if students %}
+    <ul>
+        {% for student in students %}
+        <li>
+            <span style="font-weight: 500;">{{ student }}</span>
+            <div style="width: 8px; height: 8px; background-color: var(--success-color); border-radius: 50%;"></div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div
+        style="text-align: center; padding: 3rem; color: var(--text-secondary); border: 2px dashed var(--border-color); border-radius: 8px;">
+        <p>No students found.</p>
+        <p style="font-size: 0.9rem;">Add a student above to get started.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

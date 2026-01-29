@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Simple Text Editor</h2>
+
+    <div class="text-display">{% if text %}{{ text }}{% else %}<span
+            style="color: var(--text-secondary); font-style: italic;">(Start typing to add text...)</span>{% endif %}
+    </div>
+
+    <form method="POST" class="controls" style="flex-direction: row;">
+        <input type="text" name="input_text" placeholder="Type text here..." autocomplete="off"
+            style="margin-bottom: 0; flex: 1;">
+        <button type="submit" name="command" value="add" style="margin-bottom: 0;">Add Text</button>
+    </form>
+
+    <div class="controls" style="margin-top: 1.5rem;">
+        <form method="POST" style="flex: 1;">
+            <button type="submit" name="command" value="undo" class="secondary" style="width: 100%;">Undo</button>
+        </form>
+        <form method="POST" style="flex: 1;">
+            <button type="submit" name="command" value="redo" class="secondary" style="width: 100%;">Redo</button>
+        </form>
+        <form method="POST" style="flex: 1;">
+            <button type="submit" name="command" value="remove" class="secondary"
+                style="width: 100%; color: var(--danger-color); border-color: var(--danger-color);">Remove Last</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

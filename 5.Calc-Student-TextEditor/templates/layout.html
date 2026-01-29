@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Tool App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header>
+        <h1>Toolkit</h1>
+        <nav>
+            <a href="{{ url_for('calc') }}" class="{{ 'active' if request.endpoint == 'calc' else '' }}">Calculator</a>
+            <a href="{{ url_for('text') }}" class="{{ 'active' if request.endpoint == 'text' else '' }}">Text Editor</a>
+            <a href="{{ url_for('student') }}"
+                class="{{ 'active' if request.endpoint == 'student' else '' }}">Students</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+
+</html>
