@@ -1,4 +1,4 @@
-# main.py
+ # main.py
 # Requirements:
 # pip install fastapi uvicorn sqlalchemy pydantic psycopg2-binary "pydantic[email]"
 
