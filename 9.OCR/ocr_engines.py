@@ -18,6 +18,7 @@ from typing import Dict
 import logging
 from dotenv import load_dotenv
 import requests
+import torch
 
 # Load environment variables from .env file
 load_dotenv()
@@ -42,6 +43,52 @@ def get_pytesseract():
     return _pytesseract
 
 
+def parse_from_raw_text(raw_text: str) -> Dict[str, str]:
+    """
+    Common regex-based parsing logic for raw OCR text.
+    Extracts name, dates, license number, etc.
+    """
+    extracted_fields = {
+        'name': '', 'date_of_birth': '', 'issued_by': '',
+        'date_of_issue': '', 'date_of_expiry': '', 'license_number': '',
+        'address': '', 'blood_group': '', 'vehicle_class': ''
+    }
+    extracted_fields['raw_text'] = raw_text.strip()
+
+    # Find all dates (DD/MM/YYYY format and variants)
+    dates = re.findall(r'(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4})', raw_text)
+    if dates:
+        extracted_fields['date_of_birth'] = dates[0]
+        if len(dates) > 1:
+            extracted_fields['date_of_issue'] = dates[1]
+        if len(dates) > 2:
+            extracted_fields['date_of_expiry'] = dates[2]
+
+    # Find license number (2 letters + digits pattern like PB02...)
+    # Updated pattern to be more flexible
+    license_match = re.search(r'([A-Z]{2}[\s\-]?[0-9]{2}[\s\-]?[0-9]{4,}[\d]*)', raw_text)
+    if license_match:
+        extracted_fields['license_number'] = license_match.group(1).strip()
+
+    # Find blood group
+    blood_match = re.search(r'\b([ABO]{1,2}[\+\-])', raw_text)
+    if blood_match:
+        extracted_fields['blood_group'] = blood_match.group(1)
+
+    # Find names - look for capitalized words (potential names)
+    # Names usually appear as all-caps words together
+    name_patterns = re.findall(r'([A-Z][A-Z\s]+[A-Z])', raw_text)
+    if name_patterns:
+        # Filter out short matches and common words
+        names = [n.strip() for n in name_patterns if len(n) > 5 and 'LICENCE' not in n and 'DATE' not in n and 'BLOOD' not in n and 'INDIA' not in n and 'TRANSPORT' not in n]
+        if names:
+            extracted_fields['name'] = names[0]
+            if len(names) > 1:
+                extracted_fields['issued_by'] = names[-1]  # Last name-like entry might be authority
+
+    return extracted_fields
+
+
 class TraditionalOCREngine:
     """
     Approach 1: Pytesseract - Raw image, NO preprocessing
@@ -64,41 +111,10 @@ class TraditionalOCREngine:
         try:
             # Just run Tesseract on raw image - no preprocessing
             raw_text = self.pytesseract.image_to_string(original_image)
-            
             logger.info(f"Tesseract raw output:\n{raw_text}")
             
-            # Store raw text for display
-            extracted_fields['raw_text'] = raw_text.strip()
-            
-            # Find all dates (DD/MM/YYYY format)
-            dates = re.findall(r'(\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4})', raw_text)
-            if dates:
-                extracted_fields['date_of_birth'] = dates[0]
-                if len(dates) > 1:
-                    extracted_fields['date_of_issue'] = dates[1]
-                if len(dates) > 2:
-                    extracted_fields['date_of_expiry'] = dates[2]
-            
-            # Find license number (2 letters + digits pattern like PB02...)
-            license_match = re.search(r'([A-Z]{2}[\s\-]?\d{2}[\s\-]?\d{4,}[\d]*)', raw_text)
-            if license_match:
-                extracted_fields['license_number'] = license_match.group(1).strip()
-            
-            # Find blood group
-            blood_match = re.search(r'([ABO]{1,2}[\+\-])', raw_text)
-            if blood_match:
-                extracted_fields['blood_group'] = blood_match.group(1)
-            
-            # Find names - look for capitalized words (potential names)
-            # Names usually appear as all-caps words together
-            name_patterns = re.findall(r'([A-Z][A-Z\s]+[A-Z])', raw_text)
-            if name_patterns:
-                # Filter out short matches and common words
-                names = [n.strip() for n in name_patterns if len(n) > 5 and 'LICENCE' not in n and 'DATE' not in n and 'BLOOD' not in n]
-                if names:
-                    extracted_fields['name'] = names[0]
-                    if len(names) > 1:
-                        extracted_fields['issued_by'] = names[-1]  # Last name-like entry might be authority
+            # Use common parsing logic
+            extracted_fields = parse_from_raw_text(raw_text)
             
         except Exception as e:
             logger.error(f"Tesseract error: {e}")
@@ -109,121 +125,107 @@ class TraditionalOCREngine:
 
 class VLMOCREngine:
     """
-    Approach 2: Local VLM using TrOCR (microsoft/trocr-small-printed)
-    Native Transformer model - guaranteed to load without remote code issues.
+    Approach 2: Local VLM using Microsoft Florence-2
+    Native Transformer model - fixed for _supports_sdpa error.
     """
     
     def __init__(self):
         self.processor = None
         self.model = None
-        # Switch to BASE model for better accuracy
-        self.model_id = "microsoft/trocr-base-printed" 
-        logger.info("Initializing Local TrOCR Engine...")
-        print("DEBUG: Initializing Local TrOCR Engine Class...")
+        self.model_id = "microsoft/Florence-2-base" 
+        logger.info("Initializing Florence-2 Engine...")
         self._load_model()
 
     def _load_model(self):
-        """Load TrOCR immediately."""
+        """Load Florence-2 with eager attention to bypass errors."""
         try:
-            from transformers import TrOCRProcessor, VisionEncoderDecoderModel
-            import torch
+            from transformers import AutoProcessor, AutoModelForCausalLM
             
             logger.info(f"Loading local model: {self.model_id}...")
-            print(f"DEBUG: IMPORTS SUCCESSFUL. Starting download/load of {self.model_id}...")
+            print(f"DEBUG: Starting download/load of {self.model_id}...")
             
-            # Use fast=False to avoid tokenizer bugs
-            self.processor = TrOCRProcessor.from_pretrained(self.model_id, use_fast=False)
-            print("DEBUG: Processor loaded.")
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            dtype = torch.float16 if device == "cuda" else torch.float32
             
-            self.model = VisionEncoderDecoderModel.from_pretrained(self.model_id)
+            # Use attn_implementation="eager" to fix the _supports_sdpa error
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_id, 
+                trust_remote_code=True,
+                dtype=dtype,
+                attn_implementation="eager"
+            ).to(device)
             print("DEBUG: Model loaded.")
             
-            logger.info("Local TrOCR model loaded successfully!")
+            self.processor = AutoProcessor.from_pretrained(self.model_id, trust_remote_code=True)
+            print("DEBUG: Processor loaded.")
+            
+            logger.info("Local Florence-2 model loaded successfully!")
         except Exception as e:
             import traceback
             error_trace = traceback.format_exc()
-            logger.error(f"Failed to load TrOCR: {e}")
+            logger.error(f"Failed to load Florence-2: {e}")
             print(f"CRITICAL ERROR LOADING MODEL:\n{error_trace}")
             self.model = "ERROR"
 
     def extract(self, image: Image.Image) -> Dict[str, str]:
-        """Extract text using local TrOCR with smart slicing."""
-        extracted_fields = {
-            'name': '', 'date_of_birth': '', 'issued_by': '',
-            'date_of_issue': '', 'date_of_expiry': '', 'license_number': '',
-            'address': '', 'blood_group': '', 'vehicle_class': ''
-        }
-        
+        """Extract text using Florence-2."""
         if self.model == "ERROR" or self.model is None:
-             return self._demo_output("Local Model Load Failed")
+             return self._demo_output("Model Load Failed")
 
         try:
-            # Convert to RGB
+            # Ensure RGB
             if image.mode != "RGB":
                 image = image.convert("RGB")
             
-            # STRATEGY: TrOCR needs high-res text. Resizing a full A4 doc to 384x384 kills it.
-            # We slice the image into 3 vertical chunks with overlap to preserve text size.
-            w, h = image.size
-            chunks = []
+            device = self.model.device
+            dtype = self.model.dtype
             
-            # Top half (Hero info)
-            chunks.append(image.crop((0, 0, w, int(h * 0.4))))
-            # Middle (Details)
-            chunks.append(image.crop((0, int(h * 0.3), w, int(h * 0.7))))
-            # Bottom (Footer)
-            chunks.append(image.crop((0, int(h * 0.6), w, h)))
+            # Task for OCR
+            task_prompt = "<OCR>"
             
-            full_text = []
+            # Prepare inputs
+            inputs = self.processor(text=task_prompt, images=image, return_tensors="pt").to(device, dtype)
             
-            print("DEBUG: Processing 3 image chunks...")
-            for i, chunk in enumerate(chunks):
-                # Run inference on chunk
-                pixel_values = self.processor(images=chunk, return_tensors="pt").pixel_values
-                generated_ids = self.model.generate(pixel_values, max_new_tokens=128)
-                text = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-                full_text.append(text)
-                print(f"DEBUG: Chunk {i} output: {text}")
+            # Config for generation
+            generated_ids = self.model.generate(
+                input_ids=inputs["input_ids"],
+                pixel_values=inputs["pixel_values"],
+                max_new_tokens=1024,
+                num_beams=1,
+                do_sample=False,
+                use_cache=False,
+                early_stopping=False
+            )
             
-            # Also run on full image just in case (for large headers)
-            # pixel_values = self.processor(images=image, return_tensors="pt").pixel_values
-            # generated_ids = self.model.generate(pixel_values)
-            # full_text.append(self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0])
+            # Decode output
+            generated_text = self.processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
             
-            final_text = " ".join(full_text)
-            logger.info(f"TrOCR Full Output: {final_text}")
+            # Post-process (Florence returns task + answer, usually)
+            parsed_answer = self.processor.post_process_generation(
+                generated_text, 
+                task=task_prompt, 
+                image_size=(image.width, image.height)
+            )
             
-            extracted_fields['raw_text'] = final_text
+            # parsed_answer for <OCR> is usually simple text or dict
+            raw_text = parsed_answer.get('<OCR>', '') if isinstance(parsed_answer, dict) else str(parsed_answer)
             
-            # Simple Opportunistic parsing
-            # Look for License pattern
-            lic = re.search(r'([A-Z]{2}[-\s]?\d{2}[-\s]?\d{4,})', final_text)
-            if lic:
-                extracted_fields['license_number'] = lic.group(1)
+            logger.info(f"Florence-2 Full Output: {raw_text}")
             
-            # Look for Name pattern (Long CAPS sequence)
-            names = re.findall(r'([A-Z]{3,}\s[A-Z]{3,}\s[A-Z]{3,})', final_text)
-            if names:
-                extracted_fields['name'] = names[0]
-                
-            # Dates
-            dates = re.findall(r'(\d{2}[/-]\d{2}[/-]\d{4})', final_text)
-            if dates:
-                extracted_fields['date_of_birth'] = dates[0]
-            
-            return extracted_fields
+            # Parse metrics
+            return parse_from_raw_text(raw_text)
 
         except Exception as e:
-            logger.error(f"Local TrOCR inference error: {e}")
+            logger.error(f"Florence-2 inference error: {e}")
             import traceback
             traceback.print_exc()
             return self._demo_output(str(e))
 
     def _demo_output(self, reason: str) -> Dict[str, str]:
         return {
-            'name': f'[TrOCR: {reason}]',
+            'name': f'[Florence: {reason}]',
             'date_of_birth': '', 'license_number': '', 'raw_text': f'Error: {reason}',
-            'note': 'TrOCR model failed or not loaded.'
+            'note': 'Model failed or not loaded.'
         }
 
 

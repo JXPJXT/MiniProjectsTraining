@@ -1,0 +1,171 @@
+{
+  "id": 50,
+  "image_name": "a.jpeg",
+  "timestamp": "2026-02-05T21:17:06.044705",
+  "approach1": {
+    "name": "JAPJOT SINGH BHATIA S",
+    "date_of_birth": "31/07/2005",
+    "issued_by": "CHARANJEET SINGH BHATIA",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "approach2": {
+    "name": "JAPJOT SINGH BHATIA",
+    "date_of_birth": "30/07/2045",
+    "issued_by": "CHARANJEET SING",
+    "date_of_issue": "25/10/2023",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "accuracy": {
+    "approach1": {
+      "per_field": {
+        "name": {
+          "predicted": "JAPJOT SINGH BHATIA S",
+          "ground_truth": "JAPJOT SINGH BHATIA",
+          "similarity": 0.95,
+          "cer": 0.1053,
+          "levenshtein": 2
+        },
+        "date_of_birth": {
+          "predicted": "31/07/2005",
+          "ground_truth": "31-07-2005",
+          "similarity": 0.8,
+          "cer": 0.2,
+          "levenshtein": 2
+        },
+        "issued_by": {
+          "predicted": "CHARANJEET SINGH BHATIA",
+          "ground_truth": "",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 23
+        },
+        "blood_group": {
+          "predicted": "",
+          "ground_truth": "B+",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 2
+        },
+        "date_of_issue": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "vehicle_class": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "license_number": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_expiry": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        }
+      },
+      "overall_similarity": 0.5833,
+      "overall_cer": 0.4351,
+      "accuracy_percent": 58.33
+    },
+    "approach2": {
+      "per_field": {
+        "name": {
+          "predicted": "JAPJOT SINGH BHATIA",
+          "ground_truth": "JAPJOT SINGH BHATIA",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_birth": {
+          "predicted": "30/07/2045",
+          "ground_truth": "31-07-2005",
+          "similarity": 0.6,
+          "cer": 0.4,
+          "levenshtein": 4
+        },
+        "issued_by": {
+          "predicted": "CHARANJEET SING",
+          "ground_truth": "",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 15
+        },
+        "blood_group": {
+          "predicted": "",
+          "ground_truth": "B+",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 2
+        },
+        "date_of_issue": {
+          "predicted": "25/10/2023",
+          "ground_truth": "",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 10
+        },
+        "vehicle_class": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "license_number": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_expiry": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        }
+      },
+      "overall_similarity": 0.5333,
+      "overall_cer": 0.4667,
+      "accuracy_percent": 53.33
+    },
+    "comparison": {
+      "approach1_score": 0.5833,
+      "approach2_score": 0.5333,
+      "winner": "Approach 1 (Pytesseract + PaddleOCR)",
+      "margin": 0.05
+    }
+  },
+  "ground_truth": {
+    "name": "JAPJOT SINGH BHATIA",
+    "date_of_birth": "31-07-2005",
+    "license_number": "",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "blood_group": "B+",
+    "vehicle_class": ""
+  }
+}

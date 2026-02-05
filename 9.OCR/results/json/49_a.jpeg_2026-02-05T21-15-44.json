@@ -1,0 +1,39 @@
+{
+  "id": 49,
+  "image_name": "a.jpeg",
+  "timestamp": "2026-02-05T21:15:44.798737",
+  "approach1": {
+    "name": "JAPJOT SINGH BHATIA S",
+    "date_of_birth": "31/07/2005",
+    "issued_by": "CHARANJEET SINGH BHATIA",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "approach2": {
+    "name": "JAPJOT SINGH BHATIA",
+    "date_of_birth": "30/07/2045",
+    "issued_by": "CHARANJEET SING",
+    "date_of_issue": "25/10/2023",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "accuracy": {
+    "approach1": {
+      "accuracy_percent": 0
+    },
+    "approach2": {
+      "accuracy_percent": 0
+    },
+    "comparison": {
+      "winner": "No ground truth"
+    }
+  },
+  "ground_truth": null
+}

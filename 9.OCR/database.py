@@ -326,11 +326,22 @@ async def get_accuracy_stats() -> Dict:
             }
         
         return {
-            "total_processed": 0,
-            "average_accuracy": {"approach1": 0, "approach2": 0},
-            "wins": {"approach1": 0, "approach2": 0, "ties": 0},
             "average_processing_time_ms": 0
         }
+
+
+async def delete_result(result_id: int) -> bool:
+    """Delete a result by ID."""
+    ensure_directories()
+    
+    try:
+        async with aiosqlite.connect(DB_PATH) as db:
+            cursor = await db.execute('DELETE FROM ocr_results WHERE id = ?', (result_id,))
+            await db.commit()
+            return cursor.rowcount > 0
+    except Exception as e:
+        print(f"Error deleting result {result_id}: {e}")
+        return False
 
 
 # Initialize database on module import

@@ -84,6 +84,14 @@ async def get_single_result(result_id: int):
         raise HTTPException(status_code=404, detail="Not found")
     return {"success": True, "result": result}
 
+@app.delete("/results/{result_id}")
+async def delete_single_result(result_id: int):
+    from database import delete_result
+    success = await delete_result(result_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Result not found or could not be deleted")
+    return {"success": True, "message": f"Result {result_id} deleted successfully"}
+
 @app.get("/stats")
 async def get_statistics():
     stats = await get_accuracy_stats()

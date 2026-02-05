@@ -646,7 +646,72 @@ body {
     font-weight: 600;
 }
 
-/* History Section */
+/* Navbar */
+.navbar {
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+    background: var(--bg-secondary);
+    padding: 0.5rem;
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: var(--transition);
+}
+
+.nav-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.nav-btn:hover {
+    color: var(--text-primary);
+}
+
+.nav-btn.active {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* View Views */
+.view-section {
+    animation: fadeIn 0.4s ease;
+}
+
+.view-section:not(.active) {
+    display: none !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* History Section Full */
+.history-section.full-height {
+    min-height: 600px;
+}
+
 .refresh-btn {
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
@@ -668,26 +733,67 @@ body {
     overflow-y: auto;
 }
 
+.history-list.full {
+    max-height: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+}
+
 .empty-history {
     text-align: center;
     color: var(--text-muted);
     padding: 2rem;
+    grid-column: 1 / -1;
 }
 
 .history-item {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
+    padding: 1.5rem;
     background: var(--bg-secondary);
     border-radius: var(--radius-md);
-    margin-bottom: 0.75rem;
     border: 1px solid var(--border-color);
     transition: var(--transition);
 }
 
 .history-item:hover {
-    border-color: var(--text-muted);
+    border-color: var(--text-priority);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.history-actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.delete-btn {
+    background: rgba(255, 68, 68, 0.1);
+    color: var(--error-color);
+    border: 1px solid rgba(255, 68, 68, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 68, 68, 0.2);
+    border-color: var(--error-color);
 }
 
 .history-info {
