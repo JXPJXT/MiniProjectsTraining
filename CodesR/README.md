@@ -12,6 +12,7 @@ A curated collection of Python scripts and algorithms focusing on data structure
 | `hp.py` | **Custom Hash Map**<br>A pure Python implementation of a Hash Map using chaining for collision resolution. | Python (Data Structures) |
 | `a.py` | **Math Agent Experiment**<br>A prototype AI agent that solves math problems by parsing natural language and calling Python functions. | `ollama` |
 | `bst.java` | **Binary Search Tree**<br>Java implementation of a Binary Search Tree. | Java |
+| `ticket-ai-system/` | **AI Ticket Routing System**<br>A structured FastAPI project for intelligent support ticket routing and classification. | FastAPI, SQLAlchemy |
 
 ## 🚀 How to Run
 

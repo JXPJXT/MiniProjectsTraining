@@ -61,6 +61,44 @@ This repository contains a collection of training projects demonstrating various
     - Persistent message history in MongoDB.
 - **Tech Stack:** FastAPI, MongoDB (Motor), WebSockets, HTML/JS Frontend (Templates).
 
+### 7. Agent (Math AI)
+**Directory:** `7.Agent/`
+- **Description:** An autonomous AI agent capable of parsing natural language to solve multi-step math problems using a "Thoughts → Action → Observation" loop (ReAct pattern).
+- **Key Features:**
+    - Uses **Qwen2.5-Coder:7b** via Ollama as the reasoning engine.
+    - Executes Python functions ("tools") for precise arithmetic (`add`, `multiply`, etc.) instead of hallucinating answers.
+    - Available via both Web UI (FastAPI) and CLI.
+- **Tech Stack:** FastAPI, Ollama, Python.
+
+### 8. VideoGenHF (Vintage Bike Generator)
+**Directory:** `8.VideoGenHF/`
+- **Description:** A specialized AI video and image generator optimized for creating vintage motorcycle content.
+- **Key Features:**
+    - Generates 16-frame videos or static images.
+    - Dark-themed "Vintage" UI built with Streamlit.
+    - Optimized for low-VRAM GPUs (specifically validated on RTX 3050 & Colab T4).
+- **Tech Stack:** PyTorch, Diffusers, Streamlit, MoviePy.
+
+### 9. OCR (DL Comparison System)
+**Directory:** `9.OCR/`
+- **Description:** An offline OCR system for Indian Driving Licenses that compares traditional OCR against modern Vision-Language Models (VLMs).
+- **Key Features:**
+    - **Approach 1:** Traditional (Pytesseract + PaddleOCR).
+    - **Approach 2:** VLM (OlmOCR-2-7B / Florence-2).
+    - Calculates accuracy metrics (CER, Levenshtein distance) to compare engines.
+    - Fully offline capability.
+- **Tech Stack:** FastAPI, Pytesseract, Transformers (Hugging Face), SQLite.
+
+### 10. CodesR (Mini-Projects Collection)
+**Directory:** `CodesR/`
+- **Description:** A collection of standalone algorithms, data structures, and mini-tools.
+- **Key Projects:**
+    - **Avengers Graph (`graph.py`):** Interactive visualization of character compatibility.
+    - **GOT Lineage (`got.py`):** Targaryen family tree explorer.
+    - **Ticket AI System:** A scaffold for an AI-based ticket routing system (FastAPI).
+    - **Data Structures:** Custom Hash Map (`hp.py`), Binary Search Tree (`bst.java`).
+- **Tech Stack:** Python, NetworkX, Matplotlib, Java.
+
 ## Getting Started
 
 Each project is contained within its own directory. To run a specific project, navigate to its folder and check for a `requirements.txt` file to install dependencies.
