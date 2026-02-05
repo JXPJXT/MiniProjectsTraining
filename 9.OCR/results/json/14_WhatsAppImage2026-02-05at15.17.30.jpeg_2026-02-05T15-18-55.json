@@ -1,0 +1,39 @@
+{
+  "id": 14,
+  "image_name": "WhatsApp Image 2026-02-05 at 15.17.30.jpeg",
+  "timestamp": "2026-02-05T15:18:55.642772",
+  "approach1": {
+    "name": "",
+    "date_of_birth": "31/07/2005",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "on 031280",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "approach2": {
+    "name": "[VLM: All VLM models failed]",
+    "date_of_birth": "",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "accuracy": {
+    "approach1": {
+      "accuracy_percent": 0
+    },
+    "approach2": {
+      "accuracy_percent": 0
+    },
+    "comparison": {
+      "winner": "No ground truth"
+    }
+  },
+  "ground_truth": null
+}

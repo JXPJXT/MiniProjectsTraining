@@ -1,0 +1,39 @@
+{
+  "id": 9,
+  "image_name": "download (1).jpg",
+  "timestamp": "2026-02-05T15:12:05.404492",
+  "approach1": {
+    "name": "",
+    "date_of_birth": "",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "approach2": {
+    "name": "[OlmOCR - API Error]",
+    "date_of_birth": "",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "accuracy": {
+    "approach1": {
+      "accuracy_percent": 0
+    },
+    "approach2": {
+      "accuracy_percent": 0
+    },
+    "comparison": {
+      "winner": "No ground truth"
+    }
+  },
+  "ground_truth": null
+}

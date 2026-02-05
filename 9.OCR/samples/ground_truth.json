@@ -1,0 +1,35 @@
+{
+    "sample_dl_1": {
+        "name": "Rajinder Singh",
+        "date_of_birth": "15-08-1985",
+        "license_number": "PB-02-20210012345",
+        "issued_by": "RTO Ludhiana",
+        "date_of_issue": "01-01-2021",
+        "date_of_expiry": "14-08-2035",
+        "blood_group": "B+",
+        "vehicle_class": "LMV, MCWG",
+        "address": "123 Model Town, Ludhiana, Punjab 141001"
+    },
+    "sample_dl_2": {
+        "name": "Priya Sharma",
+        "date_of_birth": "22-03-1992",
+        "license_number": "DL-1420210056789",
+        "issued_by": "RTO South Delhi",
+        "date_of_issue": "15-06-2021",
+        "date_of_expiry": "21-03-2042",
+        "blood_group": "O+",
+        "vehicle_class": "LMV",
+        "address": "45 Defence Colony, New Delhi 110024"
+    },
+    "sample_dl_3": {
+        "name": "Gurpreet Kaur",
+        "date_of_birth": "10-12-1988",
+        "license_number": "PB-08-20190034567",
+        "issued_by": "RTO Amritsar",
+        "date_of_issue": "20-02-2019",
+        "date_of_expiry": "09-12-2038",
+        "blood_group": "A-",
+        "vehicle_class": "MCWG, LMV, TRANS",
+        "address": "789 Mall Road, Amritsar, Punjab 143001"
+    }
+}

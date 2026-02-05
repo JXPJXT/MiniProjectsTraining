@@ -1,0 +1,171 @@
+{
+  "id": 7,
+  "image_name": "download (2).jpg",
+  "timestamp": "2026-02-05T15:07:10.108827",
+  "approach1": {
+    "name": "",
+    "date_of_birth": "",
+    "issued_by": "State of Kerala",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "approach2": {
+    "name": "",
+    "date_of_birth": "",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "accuracy": {
+    "approach1": {
+      "per_field": {
+        "license_number": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "issued_by": {
+          "predicted": "State of Kerala",
+          "ground_truth": "Kerela",
+          "similarity": 0.4762,
+          "cer": 1.0,
+          "levenshtein": 10
+        },
+        "date_of_birth": {
+          "predicted": "",
+          "ground_truth": "25-04-1962",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 10
+        },
+        "date_of_issue": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "name": {
+          "predicted": "",
+          "ground_truth": "JEEMON ANTHONY",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 14
+        },
+        "date_of_expiry": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "blood_group": {
+          "predicted": "",
+          "ground_truth": "B+",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 2
+        },
+        "vehicle_class": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        }
+      },
+      "overall_similarity": 0.119,
+      "overall_cer": 1.0,
+      "accuracy_percent": 11.9
+    },
+    "approach2": {
+      "per_field": {
+        "license_number": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "issued_by": {
+          "predicted": "",
+          "ground_truth": "Kerela",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 6
+        },
+        "date_of_birth": {
+          "predicted": "",
+          "ground_truth": "25-04-1962",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 10
+        },
+        "date_of_issue": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "name": {
+          "predicted": "",
+          "ground_truth": "JEEMON ANTHONY",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 14
+        },
+        "date_of_expiry": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "blood_group": {
+          "predicted": "",
+          "ground_truth": "B+",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 2
+        },
+        "vehicle_class": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        }
+      },
+      "overall_similarity": 0.0,
+      "overall_cer": 1.0,
+      "accuracy_percent": 0.0
+    },
+    "comparison": {
+      "approach1_score": 0.119,
+      "approach2_score": 0.0,
+      "winner": "Approach 1 (Pytesseract + PaddleOCR)",
+      "margin": 0.119
+    }
+  },
+  "ground_truth": {
+    "name": "JEEMON ANTHONY",
+    "date_of_birth": "25-04-1962",
+    "license_number": "",
+    "issued_by": "Kerela",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "blood_group": "B+",
+    "vehicle_class": ""
+  }
+}

@@ -1,0 +1,27 @@
+# FastAPI and Server
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Image Processing
+opencv-python
+Pillow
+numpy
+
+# OCR Engines - Local
+pytesseract
+
+# Hugging Face Inference API (for VLM - runs online, no model download)
+huggingface_hub
+requests
+
+# Accuracy Metrics
+jiwer
+python-Levenshtein
+
+# Database
+aiosqlite
+
+# Utilities
+python-dateutil
+aiofiles

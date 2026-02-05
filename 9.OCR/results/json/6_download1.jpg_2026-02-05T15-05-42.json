@@ -1,0 +1,171 @@
+{
+  "id": 6,
+  "image_name": "download (1).jpg",
+  "timestamp": "2026-02-05T15:05:42.107488",
+  "approach1": {
+    "name": "",
+    "date_of_birth": "",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "approach2": {
+    "name": "[VLM API - Demo Mode]",
+    "date_of_birth": "",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "",
+    "license_number": "",
+    "address": "",
+    "blood_group": "",
+    "vehicle_class": ""
+  },
+  "accuracy": {
+    "approach1": {
+      "per_field": {
+        "name": {
+          "predicted": "",
+          "ground_truth": "BABU KHAN",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 9
+        },
+        "license_number": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "vehicle_class": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_birth": {
+          "predicted": "",
+          "ground_truth": "01-12-1987",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 10
+        },
+        "blood_group": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_expiry": {
+          "predicted": "",
+          "ground_truth": "23-01-2027",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 10
+        },
+        "issued_by": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_issue": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        }
+      },
+      "overall_similarity": 0.0,
+      "overall_cer": 1.0,
+      "accuracy_percent": 0.0
+    },
+    "approach2": {
+      "per_field": {
+        "name": {
+          "predicted": "[VLM API - Demo Mode]",
+          "ground_truth": "BABU KHAN",
+          "similarity": 0.1333,
+          "cer": 1.0,
+          "levenshtein": 19
+        },
+        "license_number": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "vehicle_class": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_birth": {
+          "predicted": "",
+          "ground_truth": "01-12-1987",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 10
+        },
+        "blood_group": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_expiry": {
+          "predicted": "",
+          "ground_truth": "23-01-2027",
+          "similarity": 0.0,
+          "cer": 1.0,
+          "levenshtein": 10
+        },
+        "issued_by": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        },
+        "date_of_issue": {
+          "predicted": "",
+          "ground_truth": "",
+          "similarity": 1.0,
+          "cer": 0.0,
+          "levenshtein": 0
+        }
+      },
+      "overall_similarity": 0.0444,
+      "overall_cer": 1.0,
+      "accuracy_percent": 4.44
+    },
+    "comparison": {
+      "approach1_score": 0.0,
+      "approach2_score": 0.0444,
+      "winner": "Approach 2 (OlmOCR-2-7B)",
+      "margin": 0.0444
+    }
+  },
+  "ground_truth": {
+    "name": "BABU KHAN",
+    "date_of_birth": "01-12-1987",
+    "license_number": "",
+    "issued_by": "",
+    "date_of_issue": "",
+    "date_of_expiry": "23-01-2027",
+    "blood_group": "",
+    "vehicle_class": ""
+  }
+}
