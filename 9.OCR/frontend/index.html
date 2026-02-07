@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DL OCR Comparison System</title>
     <meta name="description" content="Compare Traditional OCR vs VLM-based OCR for Indian Driving License extraction">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/frontend/styles.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- Animated Background -->
@@ -16,15 +19,15 @@
             <div class="bg-orb orb-2"></div>
             <div class="bg-orb orb-3"></div>
         </div>
-        
+
         <!-- Header -->
         <header class="header">
             <div class="logo">
                 <div class="logo-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="16" rx="2"/>
-                        <circle cx="9" cy="10" r="2"/>
-                        <path d="M15 8h2M15 12h2M7 16h10"/>
+                        <rect x="3" y="4" width="18" height="16" rx="2" />
+                        <circle cx="9" cy="10" r="2" />
+                        <path d="M15 8h2M15 12h2M7 16h10" />
                     </svg>
                 </div>
                 <div class="logo-text">
@@ -45,16 +48,16 @@
             <div class="nav-links">
                 <button class="nav-btn active" data-view="analysis">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
                     </svg>
                     Analysis
                 </button>
                 <button class="nav-btn" data-view="history">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 8v4l3 3"/>
-                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 8v4l3 3" />
+                        <circle cx="12" cy="12" r="10" />
                     </svg>
                     History
                 </button>
@@ -71,15 +74,15 @@
                         <h2>Upload Driving License</h2>
                         <p>Upload a DL image to compare OCR approaches</p>
                     </div>
-                    
+
                     <div class="upload-area" id="uploadArea">
                         <input type="file" id="fileInput" accept="image/*" hidden>
                         <div class="upload-content">
                             <div class="upload-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17 8 12 3 7 8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
                                 </svg>
                             </div>
                             <p class="upload-text">Drop your DL image here or <span>browse</span></p>
@@ -171,7 +174,7 @@
                             </div>
                             <div class="accuracy-bar">
                                 <div class="bar-label">
-                                    <span>Approach 2: VLM (OlmOCR)</span>
+                                    <span>Approach 2: Florence-2 (VLM)</span>
                                     <span class="bar-value" id="acc2Value">0%</span>
                                 </div>
                                 <div class="bar-track">
@@ -194,7 +197,10 @@
                             </div>
                             <table class="extraction-table" id="approach1Table">
                                 <thead>
-                                    <tr><th>Field</th><th>Extracted Value</th></tr>
+                                    <tr>
+                                        <th>Field</th>
+                                        <th>Extracted Value</th>
+                                    </tr>
                                 </thead>
                                 <tbody></tbody>
                             </table>
@@ -202,11 +208,14 @@
                         <div class="extraction-card glass-card">
                             <div class="card-header approach2-header">
                                 <h3>Approach 2</h3>
-                                <span class="approach-tag">OlmOCR-2-7B VLM</span>
+                                <span class="approach-tag">Florence-2 (VLM)</span>
                             </div>
                             <table class="extraction-table" id="approach2Table">
                                 <thead>
-                                    <tr><th>Field</th><th>Extracted Value</th></tr>
+                                    <tr>
+                                        <th>Field</th>
+                                        <th>Extracted Value</th>
+                                    </tr>
                                 </thead>
                                 <tbody></tbody>
                             </table>
@@ -230,12 +239,21 @@
             <!-- History View -->
             <div id="history-view" class="view-section" style="display: none;">
                 <section class="history-section glass-card full-height">
-                    <div class="section-header">
+                    <div class="section-header history-header-main">
                         <h2>Historical Analysis</h2>
-                        <button class="refresh-btn" id="refreshHistory">↻ Refresh</button>
+                        <div class="history-controls">
+                            <div class="search-box">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                                <input type="text" id="historySearch" placeholder="Search filenames...">
+                            </div>
+                            <button class="refresh-btn" id="refreshHistory">↻ Refresh</button>
+                        </div>
                     </div>
                     <div class="history-list full" id="historyList">
-                        <p class="empty-history">No results found.</p>
+                        <!-- Empty state populated by JS -->
                     </div>
                 </section>
             </div>
@@ -248,4 +266,5 @@
 
     <script src="/frontend/app.js"></script>
 </body>
+
 </html>
