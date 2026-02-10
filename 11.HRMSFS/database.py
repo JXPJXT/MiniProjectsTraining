@@ -21,4 +21,4 @@ HEADERS = {
 
 def get_client() -> httpx.Client:
     """Return a pre-configured httpx client."""
-    return httpx.Client(base_url=BASE_URL, headers=HEADERS, timeout=30.0)
+    return httpx.Client(base_url=BASE_URL, headers=HEADERS, timeout=30.0, verify=False)
