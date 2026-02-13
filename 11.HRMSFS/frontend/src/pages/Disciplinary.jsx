@@ -3,7 +3,8 @@ import Header from '../components/Header';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { api } from '../api/client';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Scale, AlertTriangle, Shield, FileText, Download, Activity } from 'lucide-react';
+import { SummaryCard, StatusBreakdown, ActivityTimeline, InfoPanel, QuickActions } from '../components/PageDashboard';
 
 export default function Disciplinary() {
     const [data, setData] = useState([]);
@@ -11,6 +12,7 @@ export default function Disciplinary() {
     const [modal, setModal] = useState(null);
     const [form, setForm] = useState({ emp_id: '', issued_by: '', issue_date: '', violation_type: '', details: '', action_taken: '', outcome: '' });
     const [editId, setEditId] = useState(null);
+    const [filter, setFilter] = useState('all');
 
     const load = async () => { setLoading(true); try { setData(await api.get('/disciplinary-actions?limit=500')); } catch (e) { console.error(e); } setLoading(false); };
     useEffect(() => { load(); }, []);
@@ -24,6 +26,19 @@ export default function Disciplinary() {
         } catch (e) { alert(e.message); }
     };
     const remove = async (id) => { if (!confirm('Delete?')) return; try { await api.delete(`/disciplinary-actions/${id}`); load(); } catch (e) { alert(e.message); } };
+
+    // Stats
+    const violationTypes = {};
+    data.forEach(d => { const v = d.violation_type || 'Other'; violationTypes[v] = (violationTypes[v] || 0) + 1; });
+    const appealed = data.filter(d => d.appeal_status && d.appeal_status !== 'none');
+    const uniqueEmployees = new Set(data.map(d => d.emp_id)).size;
+
+    const recentActions = data.slice(-5).reverse().map(d => ({
+        title: `Emp #${d.emp_id} — ${d.violation_type || 'N/A'}`,
+        sub: d.action_taken || 'No action recorded',
+        time: d.issue_date || '',
+        color: d.appeal_status === 'none' ? '#333' : '#d1242f',
+    }));
 
     const columns = [
         { header: 'ID', accessor: 'action_id', width: '60px' },
@@ -46,12 +61,59 @@ export default function Disciplinary() {
     return (
         <>
             <Header title="Disciplinary" subtitle="Compliance" />
-            <div className="page-content">
+            <div className="page-content fade-in">
                 <div className="page-header">
                     <div><h1 className="page-title">Disciplinary Actions</h1><p className="page-subtitle">{data.length} records</p></div>
                     <button className="btn btn-primary" onClick={openCreate}><Plus size={14} /> New Action</button>
                 </div>
-                <DataTable columns={columns} data={data} loading={loading} searchPlaceholder="Search actions..." />
+
+                <div className="summary-grid">
+                    <SummaryCard icon={Scale} label="Total Actions" value={data.length} sub="Disciplinary records" trend="neutral" />
+                    <SummaryCard icon={AlertTriangle} label="Violations" value={Object.keys(violationTypes).length} sub="Unique types" trend="neutral" />
+                    <SummaryCard icon={Shield} label="Appeals" value={appealed.length} sub="Filed appeals" trend={appealed.length > 0 ? 'up' : 'neutral'} />
+                    <SummaryCard icon={FileText} label="Employees" value={uniqueEmployees} sub="With records" trend="neutral" />
+                </div>
+
+                <div className="page-layout">
+                    <div className="page-main">
+                        <QuickActions actions={[
+                            { label: 'New Action', icon: Plus, onClick: openCreate },
+                            { label: 'Export', icon: Download, onClick: () => alert('Coming soon') },
+                        ]} />
+                        <DataTable columns={columns} data={data} loading={loading} searchPlaceholder="Search actions..." />
+                    </div>
+
+                    <div className="page-aside">
+                        <InfoPanel title="Violation Types" icon={Activity}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                {Object.entries(violationTypes).slice(0, 8).map(([type, count]) => (
+                                    <div key={type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>{type}</span>
+                                        <span className="status-count">{count}</span>
+                                    </div>
+                                ))}
+                                {Object.keys(violationTypes).length === 0 && <div className="empty-state" style={{ padding: 10 }}><p>No data</p></div>}
+                            </div>
+                        </InfoPanel>
+
+                        <InfoPanel title="Appeal Status" icon={Shield}>
+                            <StatusBreakdown items={[
+                                { label: 'No Appeal', count: data.filter(d => d.appeal_status === 'none').length, color: '#333' },
+                                { label: 'Pending', count: data.filter(d => d.appeal_status === 'pending').length, color: '#888' },
+                                { label: 'Resolved', count: data.filter(d => d.appeal_status === 'resolved').length, color: '#ccc' },
+                            ]} />
+                        </InfoPanel>
+
+                        <InfoPanel title="Recent Actions" icon={Scale}>
+                            {recentActions.length > 0 ? (
+                                <ActivityTimeline items={recentActions} />
+                            ) : (
+                                <div className="empty-state" style={{ padding: 20 }}><p>No actions yet</p></div>
+                            )}
+                        </InfoPanel>
+                    </div>
+                </div>
+
                 {modal && (
                     <Modal title={modal === 'create' ? 'New Action' : 'Edit Action'} onClose={() => setModal(null)}
                         footer={<><button className="btn btn-secondary" onClick={() => setModal(null)}>Cancel</button><button className="btn btn-primary" onClick={save}>{modal === 'create' ? 'Create' : 'Update'}</button></>}>

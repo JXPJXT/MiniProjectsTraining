@@ -3,7 +3,8 @@ import Header from '../components/Header';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { api } from '../api/client';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Wallet, CreditCard, TrendingUp, DollarSign, Download, Activity, BarChart3 } from 'lucide-react';
+import { SummaryCard, StatusBreakdown, ActivityTimeline, InfoPanel, QuickActions } from '../components/PageDashboard';
 
 const EMPTY = { period_start: '', period_end: '', frequency: 'monthly', status: 'draft' };
 
@@ -34,6 +35,20 @@ export default function Payroll() {
     };
     const remove = async (id) => { if (!confirm('Delete?')) return; try { await api.delete(`/payroll-runs/${id}`); load(); } catch (e) { alert(e.message); } };
 
+    // Stats
+    const completed = data.filter(r => r.status === 'completed');
+    const processed = data.filter(r => r.status === 'processed');
+    const draft = data.filter(r => r.status === 'draft');
+    const totalGross = payslips.reduce((s, p) => s + Number(p.gross_salary || 0), 0);
+    const totalNet = payslips.reduce((s, p) => s + Number(p.net_pay || 0), 0);
+    const totalDeductions = payslips.reduce((s, p) => s + Number(p.total_deductions || 0), 0);
+
+    const recentActivity = data.slice(-5).reverse().map(r => ({
+        title: `Run #${r.run_id} — ${r.status}`,
+        sub: `${r.period_start} → ${r.period_end}`,
+        color: r.status === 'completed' ? '#2d8a4e' : r.status === 'processed' ? '#333' : '#999',
+    }));
+
     const runCols = [
         { header: 'ID', accessor: 'run_id', width: '60px' },
         { header: 'Period Start', accessor: 'period_start', width: '120px' },
@@ -62,17 +77,66 @@ export default function Payroll() {
     return (
         <>
             <Header title="Payroll" subtitle="Compensation" />
-            <div className="page-content">
+            <div className="page-content fade-in">
                 <div className="page-header">
                     <div><h1 className="page-title">Payroll</h1><p className="page-subtitle">Manage pay runs & payslips</p></div>
                     {tab === 'runs' && <button className="btn btn-primary" onClick={openCreate}><Plus size={14} /> New Run</button>}
                 </div>
-                <div className="tabs">
-                    <button className={`tab ${tab === 'runs' ? 'active' : ''}`} onClick={() => setTab('runs')}>Pay Runs</button>
-                    <button className={`tab ${tab === 'slips' ? 'active' : ''}`} onClick={() => setTab('slips')}>Payslips</button>
+
+                <div className="summary-grid">
+                    <SummaryCard icon={Wallet} label="Total Runs" value={data.length} sub={`${completed.length} completed`} trend="neutral" />
+                    <SummaryCard icon={DollarSign} label="Total Gross" value={`₹${(totalGross / 1000).toFixed(0)}K`} sub={`${payslips.length} payslips`} trend="up" />
+                    <SummaryCard icon={CreditCard} label="Net Disbursed" value={`₹${(totalNet / 1000).toFixed(0)}K`} sub="Total net pay" trend="up" />
+                    <SummaryCard icon={TrendingUp} label="Deductions" value={`₹${(totalDeductions / 1000).toFixed(0)}K`} sub="Tax, PF, etc." trend="neutral" />
                 </div>
-                {tab === 'runs' && <DataTable columns={runCols} data={data} loading={loading} searchPlaceholder="Search pay runs..." />}
-                {tab === 'slips' && <DataTable columns={slipCols} data={payslips} loading={loading} searchPlaceholder="Search payslips..." />}
+
+                <div className="page-layout">
+                    <div className="page-main">
+                        <QuickActions actions={[
+                            { label: 'New Run', icon: Plus, onClick: openCreate },
+                            { label: 'Export', icon: Download, onClick: () => alert('Export — coming soon') },
+                        ]} />
+
+                        <div className="tabs">
+                            <button className={`tab ${tab === 'runs' ? 'active' : ''}`} onClick={() => setTab('runs')}>Pay Runs</button>
+                            <button className={`tab ${tab === 'slips' ? 'active' : ''}`} onClick={() => setTab('slips')}>Payslips</button>
+                        </div>
+                        {tab === 'runs' && <DataTable columns={runCols} data={data} loading={loading} searchPlaceholder="Search pay runs..." />}
+                        {tab === 'slips' && <DataTable columns={slipCols} data={payslips} loading={loading} searchPlaceholder="Search payslips..." />}
+                    </div>
+
+                    <div className="page-aside">
+                        <InfoPanel title="Run Status" icon={Activity}>
+                            <StatusBreakdown items={[
+                                { label: 'Draft', count: draft.length, color: '#ccc' },
+                                { label: 'Processed', count: processed.length, color: '#888' },
+                                { label: 'Completed', count: completed.length, color: '#333' },
+                            ]} />
+                        </InfoPanel>
+
+                        <InfoPanel title="Pay Summary" icon={BarChart3}>
+                            <div className="stat-row" style={{ border: '1px solid var(--border-color)' }}>
+                                <div className="stat-row-item">
+                                    <div className="stat-row-value">{payslips.length}</div>
+                                    <div className="stat-row-label">Slips</div>
+                                </div>
+                                <div className="stat-row-item">
+                                    <div className="stat-row-value">₹{payslips.length > 0 ? Math.round(totalNet / payslips.length).toLocaleString() : 0}</div>
+                                    <div className="stat-row-label">Avg Net</div>
+                                </div>
+                            </div>
+                        </InfoPanel>
+
+                        <InfoPanel title="Recent Runs" icon={Wallet}>
+                            {recentActivity.length > 0 ? (
+                                <ActivityTimeline items={recentActivity} />
+                            ) : (
+                                <div className="empty-state" style={{ padding: 20 }}><p>No runs yet</p></div>
+                            )}
+                        </InfoPanel>
+                    </div>
+                </div>
+
                 {modal && (
                     <Modal title={modal === 'create' ? 'New Pay Run' : 'Edit Pay Run'} onClose={() => setModal(null)}
                         footer={<><button className="btn btn-secondary" onClick={() => setModal(null)}>Cancel</button><button className="btn btn-primary" onClick={save}>{modal === 'create' ? 'Create' : 'Update'}</button></>}>

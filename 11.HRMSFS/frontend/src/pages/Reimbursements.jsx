@@ -3,7 +3,8 @@ import Header from '../components/Header';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { api } from '../api/client';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Receipt, DollarSign, Clock, CheckCircle, Download, Activity } from 'lucide-react';
+import { SummaryCard, StatusBreakdown, ActivityTimeline, InfoPanel, QuickActions } from '../components/PageDashboard';
 
 export default function Reimbursements() {
     const [tab, setTab] = useState('claims');
@@ -43,6 +44,19 @@ export default function Reimbursements() {
         } catch (e) { alert(e.message); }
     };
 
+    // Stats
+    const pending = claims.filter(c => c.status === 'pending');
+    const approved = claims.filter(c => c.status === 'approved');
+    const totalAmount = claims.reduce((s, c) => s + Number(c.amount || 0), 0);
+    const pendingAmount = pending.reduce((s, c) => s + Number(c.amount || 0), 0);
+
+    const recentClaims = claims.slice(-5).reverse().map(c => ({
+        title: `Emp #${c.emp_id} — ₹${Number(c.amount || 0).toLocaleString()}`,
+        sub: c.status,
+        time: c.claim_date || '',
+        color: c.status === 'approved' ? '#2d8a4e' : c.status === 'rejected' ? '#d1242f' : '#999',
+    }));
+
     const claimCols = [
         { header: 'ID', accessor: 'claim_id', width: '60px' },
         { header: 'Emp ID', accessor: 'emp_id', width: '80px' },
@@ -81,16 +95,66 @@ export default function Reimbursements() {
     return (
         <>
             <Header title="Reimbursements" subtitle="Expense Claims" />
-            <div className="page-content">
+            <div className="page-content fade-in">
                 <div className="page-header">
                     <div><h1 className="page-title">Reimbursements</h1><p className="page-subtitle">Claims & types</p></div>
                     <button className="btn btn-primary" onClick={openCreate}><Plus size={14} /> New</button>
                 </div>
-                <div className="tabs">
-                    <button className={`tab ${tab === 'claims' ? 'active' : ''}`} onClick={() => setTab('claims')}>Claims</button>
-                    <button className={`tab ${tab === 'types' ? 'active' : ''}`} onClick={() => setTab('types')}>Types</button>
+
+                <div className="summary-grid">
+                    <SummaryCard icon={Receipt} label="Total Claims" value={claims.length} sub={`${types.length} types configured`} trend="neutral" />
+                    <SummaryCard icon={Clock} label="Pending" value={pending.length} sub={`₹${pendingAmount.toLocaleString()} pending`} trend={pending.length > 3 ? 'up' : 'neutral'} />
+                    <SummaryCard icon={CheckCircle} label="Approved" value={approved.length} sub="Processed claims" trend="up" />
+                    <SummaryCard icon={DollarSign} label="Total Amount" value={`₹${(totalAmount / 1000).toFixed(0)}K`} sub="All claims" trend="neutral" />
                 </div>
-                <DataTable columns={cur.cols} data={cur.data} loading={loading} searchPlaceholder={`Search ${tab}...`} />
+
+                <div className="page-layout">
+                    <div className="page-main">
+                        <QuickActions actions={[
+                            { label: 'Submit Claim', icon: Receipt, onClick: () => { setTab('claims'); openCreate(); } },
+                            { label: 'Add Type', icon: Plus, onClick: () => { setTab('types'); openCreate(); } },
+                            { label: 'Export', icon: Download, onClick: () => alert('Coming soon') },
+                        ]} />
+
+                        <div className="tabs">
+                            <button className={`tab ${tab === 'claims' ? 'active' : ''}`} onClick={() => setTab('claims')}>Claims</button>
+                            <button className={`tab ${tab === 'types' ? 'active' : ''}`} onClick={() => setTab('types')}>Types</button>
+                        </div>
+                        <DataTable columns={cur.cols} data={cur.data} loading={loading} searchPlaceholder={`Search ${tab}...`} />
+                    </div>
+
+                    <div className="page-aside">
+                        <InfoPanel title="Claim Status" icon={Activity}>
+                            <StatusBreakdown items={[
+                                { label: 'Pending', count: pending.length, color: '#888' },
+                                { label: 'Approved', count: approved.length, color: '#333' },
+                                { label: 'Rejected', count: claims.filter(c => c.status === 'rejected').length, color: '#ccc' },
+                            ]} />
+                        </InfoPanel>
+
+                        <InfoPanel title="Amounts" icon={DollarSign}>
+                            <div className="stat-row" style={{ border: '1px solid var(--border-color)' }}>
+                                <div className="stat-row-item">
+                                    <div className="stat-row-value">₹{(totalAmount / 1000).toFixed(0)}K</div>
+                                    <div className="stat-row-label">Total</div>
+                                </div>
+                                <div className="stat-row-item">
+                                    <div className="stat-row-value">₹{claims.length > 0 ? Math.round(totalAmount / claims.length).toLocaleString() : 0}</div>
+                                    <div className="stat-row-label">Avg</div>
+                                </div>
+                            </div>
+                        </InfoPanel>
+
+                        <InfoPanel title="Recent Claims" icon={Receipt}>
+                            {recentClaims.length > 0 ? (
+                                <ActivityTimeline items={recentClaims} />
+                            ) : (
+                                <div className="empty-state" style={{ padding: 20 }}><p>No claims yet</p></div>
+                            )}
+                        </InfoPanel>
+                    </div>
+                </div>
+
                 {modal && tab === 'types' && (
                     <Modal title={modal === 'create' ? 'New Type' : 'Edit Type'} onClose={() => setModal(null)}
                         footer={<><button className="btn btn-secondary" onClick={() => setModal(null)}>Cancel</button><button className="btn btn-primary" onClick={save}>{modal === 'create' ? 'Create' : 'Update'}</button></>}>

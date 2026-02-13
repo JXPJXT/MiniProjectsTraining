@@ -3,7 +3,8 @@ import Header from '../components/Header';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { api } from '../api/client';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, CalendarOff, CheckCircle, XCircle, Clock, Download, Filter, CalendarDays, BarChart3 } from 'lucide-react';
+import { SummaryCard, StatusBreakdown, ActivityTimeline, InfoPanel, MiniDonut, QuickActions } from '../components/PageDashboard';
 
 const EMPTY = { emp_id: '', leave_type: 'annual', start_date: '', end_date: '', days_requested: '', status: 'pending', remarks: '' };
 
@@ -13,6 +14,7 @@ export default function Leave() {
     const [modal, setModal] = useState(null);
     const [form, setForm] = useState({ ...EMPTY });
     const [editId, setEditId] = useState(null);
+    const [filter, setFilter] = useState('all');
 
     const load = async () => { setLoading(true); try { setData(await api.get('/leave-requests?limit=500')); } catch (e) { console.error(e); } setLoading(false); };
     useEffect(() => { load(); }, []);
@@ -26,6 +28,32 @@ export default function Leave() {
         } catch (e) { alert(e.message); }
     };
     const remove = async (id) => { if (!confirm('Delete?')) return; try { await api.delete(`/leave-requests/${id}`); load(); } catch (e) { alert(e.message); } };
+
+    // Computed stats
+    const pending = data.filter(l => l.status === 'pending');
+    const approved = data.filter(l => l.status === 'approved');
+    const rejected = data.filter(l => l.status === 'rejected');
+    const totalDays = data.reduce((s, l) => s + Number(l.days_requested || 0), 0);
+
+    // Leave type distribution
+    const typeCount = {};
+    data.forEach(l => { typeCount[l.leave_type] = (typeCount[l.leave_type] || 0) + 1; });
+    const typeColors = { annual: '#333', sick: '#888', casual: '#555', maternity: '#aaa', paternity: '#666', unpaid: '#bbb' };
+    const donutSegments = Object.entries(typeCount).map(([type, count]) => ({
+        pct: data.length > 0 ? (count / data.length) * 100 : 0,
+        color: typeColors[type] || '#999',
+    }));
+
+    // Filter data
+    const filteredData = filter === 'all' ? data : data.filter(l => l.status === filter);
+
+    // Recent activity
+    const recentActivity = data.slice(-5).reverse().map(l => ({
+        title: `Emp #${l.emp_id} — ${l.leave_type} leave`,
+        sub: `${l.start_date} → ${l.end_date}`,
+        time: l.days_requested ? `${l.days_requested}d` : '',
+        color: l.status === 'approved' ? '#2d8a4e' : l.status === 'rejected' ? '#d1242f' : '#999',
+    }));
 
     const columns = [
         { header: 'ID', accessor: 'id', width: '60px' },
@@ -48,12 +76,83 @@ export default function Leave() {
     return (
         <>
             <Header title="Leave" subtitle="Leave Management" />
-            <div className="page-content">
+            <div className="page-content fade-in">
                 <div className="page-header">
-                    <div><h1 className="page-title">Leave Requests</h1><p className="page-subtitle">{data.length} requests</p></div>
+                    <div><h1 className="page-title">Leave Management</h1><p className="page-subtitle">{data.length} total requests</p></div>
                     <button className="btn btn-primary" onClick={openCreate}><Plus size={14} /> New Request</button>
                 </div>
-                <DataTable columns={columns} data={data} loading={loading} searchPlaceholder="Search leave requests..." />
+
+                {/* Summary Cards */}
+                <div className="summary-grid">
+                    <SummaryCard icon={Clock} label="Pending" value={pending.length} sub="Awaiting approval" trend={pending.length > 3 ? 'up' : 'neutral'} />
+                    <SummaryCard icon={CheckCircle} label="Approved" value={approved.length} sub={`${Math.round(data.length > 0 ? (approved.length / data.length) * 100 : 0)}% approval rate`} trend="up" />
+                    <SummaryCard icon={XCircle} label="Rejected" value={rejected.length} sub="Declined requests" trend={rejected.length > 0 ? 'down' : 'neutral'} />
+                    <SummaryCard icon={CalendarOff} label="Total Days" value={totalDays} sub="Days requested overall" trend="neutral" />
+                </div>
+
+                <div className="page-layout">
+                    <div className="page-main">
+                        {/* Quick Actions */}
+                        <QuickActions actions={[
+                            { label: 'Apply Leave', icon: Plus, onClick: openCreate },
+                            { label: 'Export Report', icon: Download, onClick: () => alert('Export feature — coming soon') },
+                        ]} />
+
+                        {/* Filter Pills */}
+                        <div className="filter-pills">
+                            {['all', 'pending', 'approved', 'rejected'].map(f => (
+                                <button key={f} className={`filter-pill ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
+                                    {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+
+                        <DataTable columns={columns} data={filteredData} loading={loading} searchPlaceholder="Search leave requests..." />
+                    </div>
+
+                    <div className="page-aside">
+                        {/* Leave Type Distribution */}
+                        <InfoPanel title="Leave Distribution" icon={BarChart3}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                <div className="donut-wrapper">
+                                    <MiniDonut segments={donutSegments.length > 0 ? donutSegments : [{ pct: 100, color: 'var(--border-color)' }]} />
+                                    <div className="donut-center-text">
+                                        <div className="donut-center-value">{data.length}</div>
+                                        <div className="donut-center-label">Total</div>
+                                    </div>
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    {Object.entries(typeCount).map(([type, count]) => (
+                                        <div key={type} className="status-legend-item" style={{ marginBottom: 4 }}>
+                                            <span className="status-dot" style={{ background: typeColors[type] || '#999' }} />
+                                            <span style={{ textTransform: 'capitalize' }}>{type}</span>
+                                            <span className="status-count">{count}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </InfoPanel>
+
+                        {/* Status Breakdown */}
+                        <InfoPanel title="Status Overview" icon={Filter}>
+                            <StatusBreakdown items={[
+                                { label: 'Pending', count: pending.length, color: '#888' },
+                                { label: 'Approved', count: approved.length, color: '#333' },
+                                { label: 'Rejected', count: rejected.length, color: '#ccc' },
+                            ]} />
+                        </InfoPanel>
+
+                        {/* Recent Activity */}
+                        <InfoPanel title="Recent Activity" icon={CalendarDays}>
+                            {recentActivity.length > 0 ? (
+                                <ActivityTimeline items={recentActivity} />
+                            ) : (
+                                <div className="empty-state" style={{ padding: 20 }}><p>No recent activity</p></div>
+                            )}
+                        </InfoPanel>
+                    </div>
+                </div>
+
                 {modal && (
                     <Modal title={modal === 'create' ? 'New Leave Request' : 'Edit Leave Request'} onClose={() => setModal(null)}
                         footer={<><button className="btn btn-secondary" onClick={() => setModal(null)}>Cancel</button><button className="btn btn-primary" onClick={save}>{modal === 'create' ? 'Submit' : 'Update'}</button></>}>

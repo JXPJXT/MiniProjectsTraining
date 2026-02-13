@@ -1,28 +1,40 @@
-/**
- * API client — all calls go through the Vite proxy at /api
- */
+// In development, Vite proxies /api → backend
+// In production (Vercel), we need the full Render URL
+const BASE = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL   // Production: full URL like https://hrms-api.onrender.com
+    : '/api';                          // Dev: Vite proxy
 
-const BASE = '/api';
+async function request(method, path, body = null, customHeaders = {}) {
+    const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json', ...customHeaders },
+    };
+    if (body) opts.body = JSON.stringify(body);
 
-async function request(path, options = {}) {
-    const url = `${BASE}${path}`;
-    const res = await fetch(url, {
-        headers: { 'Content-Type': 'application/json', ...options.headers },
-        ...options,
-    });
+    const res = await fetch(`${BASE}${path}`, opts);
 
     if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `HTTP ${res.status}`);
+        let msg = `HTTP ${res.status}`;
+        try {
+            const err = await res.json();
+            msg = err.detail || err.message || msg;
+        } catch { /* ignore */ }
+        throw new Error(msg);
     }
 
-    if (res.status === 204) return null;
-    return res.json();
+    const text = await res.text();
+    return text ? JSON.parse(text) : {};
 }
 
 export const api = {
-    get: (path) => request(path),
-    post: (path, data) => request(path, { method: 'POST', body: JSON.stringify(data) }),
-    put: (path, data) => request(path, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (path) => request(path, { method: 'DELETE' }),
+    get: (path) => request('GET', path),
+    post: (path, body) => request('POST', path, body),
+    put: (path, body) => request('PUT', path, body),
+    patch: (path, body) => request('PATCH', path, body),
+    delete: (path) => request('DELETE', path),
+
+    // Authenticated request (with Bearer token)
+    getAuth: (path, token) => request('GET', path, null, {
+        'Authorization': `Bearer ${token}`,
+    }),
 };

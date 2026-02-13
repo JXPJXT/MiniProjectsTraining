@@ -3,7 +3,8 @@ import Header from '../components/Header';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { api } from '../api/client';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, UserCheck, UserX, Download, Building2, CalendarDays, Activity } from 'lucide-react';
+import { SummaryCard, StatusBreakdown, ActivityTimeline, InfoPanel, QuickActions } from '../components/PageDashboard';
 
 const EMPTY = {
     employee_code: '', first_name: '', last_name: '', email: '',
@@ -13,9 +14,10 @@ const EMPTY = {
 export default function Employees() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [modal, setModal] = useState(null); // 'create' | 'edit'
+    const [modal, setModal] = useState(null);
     const [form, setForm] = useState({ ...EMPTY });
     const [editId, setEditId] = useState(null);
+    const [filter, setFilter] = useState('all');
 
     const load = async () => {
         setLoading(true);
@@ -61,6 +63,32 @@ export default function Employees() {
             load();
         } catch (e) { alert('Error: ' + e.message); }
     };
+
+    // Computed stats
+    const active = data.filter(e => e.status === 'active');
+    const inactive = data.filter(e => e.status === 'inactive');
+    const terminated = data.filter(e => e.status === 'terminated');
+
+    // Department distribution
+    const deptCount = {};
+    data.forEach(e => {
+        const dept = e.dept_id ? `Dept #${e.dept_id}` : 'Unassigned';
+        deptCount[dept] = (deptCount[dept] || 0) + 1;
+    });
+
+    // Recent hires
+    const recentHires = [...data]
+        .sort((a, b) => new Date(b.hire_date || 0) - new Date(a.hire_date || 0))
+        .slice(0, 5)
+        .map(e => ({
+            title: `${e.first_name} ${e.last_name}`,
+            sub: e.email || 'No email',
+            time: e.hire_date || '',
+            color: e.status === 'active' ? '#2d8a4e' : '#999',
+        }));
+
+    // Filter data
+    const filteredData = filter === 'all' ? data : data.filter(e => e.status === filter);
 
     const columns = [
         { header: 'Code', accessor: 'employee_code', width: '100px' },
@@ -139,21 +167,85 @@ export default function Employees() {
     return (
         <>
             <Header title="Employees" subtitle="People Management" />
-            <div className="page-content">
+            <div className="page-content fade-in">
                 <div className="page-header">
                     <div>
                         <h1 className="page-title">Employees</h1>
-                        <p className="page-subtitle">{data.length} records</p>
+                        <p className="page-subtitle">{data.length} total records</p>
                     </div>
                     <button className="btn btn-primary" onClick={openCreate}><Plus size={14} /> New Employee</button>
                 </div>
 
-                <DataTable
-                    columns={columns}
-                    data={data}
-                    loading={loading}
-                    searchPlaceholder="Search employees..."
-                />
+                {/* Summary Cards */}
+                <div className="summary-grid">
+                    <SummaryCard icon={Users} label="Total Employees" value={data.length} sub="Across all departments" trend="neutral" />
+                    <SummaryCard icon={UserCheck} label="Active" value={active.length} sub={`${Math.round(data.length > 0 ? (active.length / data.length) * 100 : 0)}% of workforce`} trend="up" />
+                    <SummaryCard icon={UserX} label="Inactive" value={inactive.length} sub="On leave or suspended" trend={inactive.length > 0 ? 'down' : 'neutral'} />
+                    <SummaryCard icon={Building2} label="Departments" value={Object.keys(deptCount).length} sub="Active org units" trend="neutral" />
+                </div>
+
+                <div className="page-layout">
+                    <div className="page-main">
+                        {/* Quick Actions */}
+                        <QuickActions actions={[
+                            { label: 'Add Employee', icon: Plus, onClick: openCreate },
+                            { label: 'Export CSV', icon: Download, onClick: () => alert('Export feature — coming soon') },
+                        ]} />
+
+                        {/* Filter Pills */}
+                        <div className="filter-pills">
+                            {['all', 'active', 'inactive', 'terminated'].map(f => (
+                                <button key={f} className={`filter-pill ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
+                                    {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+
+                        <DataTable
+                            columns={columns}
+                            data={filteredData}
+                            loading={loading}
+                            searchPlaceholder="Search employees..."
+                        />
+                    </div>
+
+                    <div className="page-aside">
+                        {/* Status Breakdown */}
+                        <InfoPanel title="Status Overview" icon={Activity}>
+                            <StatusBreakdown items={[
+                                { label: 'Active', count: active.length, color: '#333' },
+                                { label: 'Inactive', count: inactive.length, color: '#999' },
+                                { label: 'Terminated', count: terminated.length, color: '#ccc' },
+                            ]} />
+                        </InfoPanel>
+
+                        {/* Department Distribution */}
+                        <InfoPanel title="By Department" icon={Building2}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                {Object.entries(deptCount).slice(0, 8).map(([dept, count]) => (
+                                    <div key={dept} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.75rem' }}>{dept}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <div className="progress-bar" style={{ width: 60, marginTop: 0 }}>
+                                                <div className="progress-fill" style={{ width: `${(count / data.length) * 100}%` }} />
+                                            </div>
+                                            <span className="status-count">{count}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </InfoPanel>
+
+                        {/* Recent Hires */}
+                        <InfoPanel title="Recent Hires" icon={CalendarDays}>
+                            {recentHires.length > 0 ? (
+                                <ActivityTimeline items={recentHires} />
+                            ) : (
+                                <div className="empty-state" style={{ padding: 20 }}><p>No employees yet</p></div>
+                            )}
+                        </InfoPanel>
+                    </div>
+                </div>
 
                 {modal && (
                     <Modal

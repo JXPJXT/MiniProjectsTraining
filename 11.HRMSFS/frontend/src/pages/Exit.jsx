@@ -3,7 +3,8 @@ import Header from '../components/Header';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { api } from '../api/client';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, DoorOpen, UserMinus, CheckCircle, Clock, Download, Activity, MessageSquare } from 'lucide-react';
+import { SummaryCard, StatusBreakdown, ActivityTimeline, InfoPanel, QuickActions } from '../components/PageDashboard';
 
 export default function Exit() {
     const [data, setData] = useState([]);
@@ -25,6 +26,22 @@ export default function Exit() {
     };
     const remove = async (id) => { if (!confirm('Delete?')) return; try { await api.delete(`/exit-interviews/${id}`); load(); } catch (e) { alert(e.message); } };
 
+    // Stats
+    const pending = data.filter(d => d.clearance_status === 'pending');
+    const completed = data.filter(d => d.clearance_status === 'completed');
+    const settled = data.filter(d => d.final_settlement_done);
+
+    // Reason distribution
+    const reasonCount = {};
+    data.forEach(d => { const r = d.reason_for_leaving || 'Not specified'; reasonCount[r] = (reasonCount[r] || 0) + 1; });
+
+    const recentExits = data.slice(-5).reverse().map(d => ({
+        title: `Emp #${d.emp_id}`,
+        sub: d.reason_for_leaving || 'No reason given',
+        time: d.interview_date || '',
+        color: d.clearance_status === 'completed' ? '#2d8a4e' : '#999',
+    }));
+
     const columns = [
         { header: 'ID', accessor: 'interview_id', width: '60px' },
         { header: 'Emp ID', accessor: 'emp_id', width: '80px' },
@@ -45,12 +62,58 @@ export default function Exit() {
     return (
         <>
             <Header title="Exit" subtitle="Offboarding" />
-            <div className="page-content">
+            <div className="page-content fade-in">
                 <div className="page-header">
                     <div><h1 className="page-title">Exit Interviews</h1><p className="page-subtitle">{data.length} records</p></div>
                     <button className="btn btn-primary" onClick={openCreate}><Plus size={14} /> New Interview</button>
                 </div>
-                <DataTable columns={columns} data={data} loading={loading} searchPlaceholder="Search exit interviews..." />
+
+                <div className="summary-grid">
+                    <SummaryCard icon={DoorOpen} label="Total Exits" value={data.length} sub="Exit interviews" trend="neutral" />
+                    <SummaryCard icon={Clock} label="Pending" value={pending.length} sub="Awaiting clearance" trend={pending.length > 0 ? 'up' : 'neutral'} />
+                    <SummaryCard icon={CheckCircle} label="Completed" value={completed.length} sub="Clearance done" trend="up" />
+                    <SummaryCard icon={UserMinus} label="Settled" value={settled.length} sub="Final settlement" trend="neutral" />
+                </div>
+
+                <div className="page-layout">
+                    <div className="page-main">
+                        <QuickActions actions={[
+                            { label: 'New Interview', icon: Plus, onClick: openCreate },
+                            { label: 'Export', icon: Download, onClick: () => alert('Coming soon') },
+                        ]} />
+                        <DataTable columns={columns} data={data} loading={loading} searchPlaceholder="Search exit interviews..." />
+                    </div>
+
+                    <div className="page-aside">
+                        <InfoPanel title="Clearance Status" icon={Activity}>
+                            <StatusBreakdown items={[
+                                { label: 'Pending', count: pending.length, color: '#888' },
+                                { label: 'Completed', count: completed.length, color: '#333' },
+                            ]} />
+                        </InfoPanel>
+
+                        <InfoPanel title="Leaving Reasons" icon={MessageSquare}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                {Object.entries(reasonCount).slice(0, 6).map(([reason, count]) => (
+                                    <div key={reason} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.75rem', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{reason}</span>
+                                        <span className="status-count">{count}</span>
+                                    </div>
+                                ))}
+                                {Object.keys(reasonCount).length === 0 && <div className="empty-state" style={{ padding: 10 }}><p>No data</p></div>}
+                            </div>
+                        </InfoPanel>
+
+                        <InfoPanel title="Recent Exits" icon={DoorOpen}>
+                            {recentExits.length > 0 ? (
+                                <ActivityTimeline items={recentExits} />
+                            ) : (
+                                <div className="empty-state" style={{ padding: 20 }}><p>No exits yet</p></div>
+                            )}
+                        </InfoPanel>
+                    </div>
+                </div>
+
                 {modal && (
                     <Modal title={modal === 'create' ? 'New Exit Interview' : 'Edit Exit Interview'} onClose={() => setModal(null)}
                         footer={<><button className="btn btn-secondary" onClick={() => setModal(null)}>Cancel</button><button className="btn btn-primary" onClick={save}>{modal === 'create' ? 'Create' : 'Update'}</button></>}>

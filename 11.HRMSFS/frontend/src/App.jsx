@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
 import Sidebar from './components/Sidebar';
+import AuthPage from './pages/AuthPage';
 
 import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
@@ -20,6 +22,20 @@ import Exit from './pages/Exit';
 import Audit from './pages/Audit';
 
 export default function App() {
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+                <div className="loading"><div className="spinner" /> Loading...</div>
+            </div>
+        );
+    }
+
+    if (!user) {
+        return <AuthPage />;
+    }
+
     return (
         <div className="app-layout">
             <Sidebar />
