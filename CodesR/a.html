@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rain Water Trapping Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .canvas-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-box .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .code-explanation {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .speed-control input[type="range"] {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌧️ Rain Water Trapping Visualizer</h1>
+        
+        <div class="controls">
+            <input type="text" id="heightInput" placeholder="Enter heights (e.g., 0,1,0,2,1,0,1,3,2,1,2,1)" value="0,1,0,2,1,0,1,3,2,1,2,1">
+            <button onclick="resetVisualization()">Reset</button>
+            <button id="stepBtn" onclick="step()">Step</button>
+            <button id="playBtn" onclick="togglePlay()">▶ Play</button>
+            <div class="speed-control">
+                <label>Speed:</label>
+                <input type="range" id="speedControl" min="100" max="2000" value="800" step="100">
+                <span id="speedValue">800ms</span>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8b4513;"></div>
+                <span>Elevation Bar</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4a90e2;"></div>
+                <span>Trapped Water</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: rgba(231, 76, 60, 0.5); border: 3px solid #e74c3c;"></div>
+                <span>Left Pointer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: rgba(46, 204, 113, 0.5); border: 3px solid #2ecc71;"></div>
+                <span>Right Pointer</span>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="label">Left Pointer</div>
+                <div class="value" id="leftPointer">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Right Pointer</div>
+                <div class="value" id="rightPointer">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Left Max</div>
+                <div class="value" id="leftMax">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Right Max</div>
+                <div class="value" id="rightMax">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Total Water</div>
+                <div class="value" id="totalWater">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="label">Current Step</div>
+                <div class="value" id="stepCount">0</div>
+            </div>
+        </div>
+        
+        <div class="code-explanation" id="explanation">
+            Click "Step" or "Play" to start the visualization
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let heights = [];
+        let l = 0, r = 0;
+        let leftMax = 0, rightMax = 0;
+        let totalWater = 0;
+        let waterTrapped = [];
+        let isPlaying = false;
+        let playInterval = null;
+        let stepCount = 0;
+        
+        // Speed control
+        document.getElementById('speedControl').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = e.target.value + 'ms';
+            if (isPlaying) {
+                togglePlay();
+                togglePlay();
+            }
+        });
+        
+        function resetVisualization() {
+            const input = document.getElementById('heightInput').value;
+            heights = input.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+            
+            if (heights.length < 2) {
+                alert('Please enter at least 2 heights');
+                return;
+            }
+            
+            l = 0;
+            r = heights.length - 1;
+            leftMax = 0;
+            rightMax = 0;
+            totalWater = 0;
+            waterTrapped = new Array(heights.length).fill(0);
+            stepCount = 0;
+            
+            if (isPlaying) {
+                togglePlay();
+            }
+            
+            updateCanvas();
+            updateStats();
+            updateExplanation('Algorithm initialized. Ready to start.');
+        }
+        
+        function step() {
+            if (l >= r) {
+                updateExplanation('Algorithm complete! Total water trapped: ' + totalWater);
+                return;
+            }
+            
+            stepCount++;
+            let explanation = `Step ${stepCount}: `;
+            
+            if (heights[l] < heights[r]) {
+                explanation += `h[${l}]=${heights[l]} < h[${r}]=${heights[r]}, process left pointer\n`;
+                
+                if (heights[l] > leftMax) {
+                    leftMax = heights[l];
+                    explanation += `  → Update leftMax to ${leftMax}`;
+                } else {
+                    const water = leftMax - heights[l];
+                    totalWater += water;
+                    waterTrapped[l] = water;
+                    explanation += `  → Trap ${water} unit(s) of water at index ${l}\n`;
+                    explanation += `  → Water = leftMax(${leftMax}) - h[${l}](${heights[l]}) = ${water}`;
+                }
+                l++;
+                explanation += `\n  → Move left pointer to ${l}`;
+            } else {
+                explanation += `h[${l}]=${heights[l]} >= h[${r}]=${heights[r]}, process right pointer\n`;
+                
+                if (heights[r] > rightMax) {
+                    rightMax = heights[r];
+                    explanation += `  → Update rightMax to ${rightMax}`;
+                } else {
+                    const water = rightMax - heights[r];
+                    totalWater += water;
+                    waterTrapped[r] = water;
+                    explanation += `  → Trap ${water} unit(s) of water at index ${r}\n`;
+                    explanation += `  → Water = rightMax(${rightMax}) - h[${r}](${heights[r]}) = ${water}`;
+                }
+                r--;
+                explanation += `\n  → Move right pointer to ${r}`;
+            }
+            
+            updateCanvas();
+            updateStats();
+            updateExplanation(explanation);
+            
+            if (l >= r) {
+                document.getElementById('stepBtn').disabled = true;
+                if (isPlaying) {
+                    togglePlay();
+                }
+            }
+        }
+        
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const playBtn = document.getElementById('playBtn');
+            
+            if (isPlaying) {
+                playBtn.textContent = '⏸ Pause';
+                document.getElementById('stepBtn').disabled = true;
+                const speed = parseInt(document.getElementById('speedControl').value);
+                playInterval = setInterval(() => {
+                    if (l >= r) {
+                        togglePlay();
+                    } else {
+                        step();
+                    }
+                }, speed);
+            } else {
+                playBtn.textContent = '▶ Play';
+                document.getElementById('stepBtn').disabled = false;
+                clearInterval(playInterval);
+            }
+        }
+        
+        function updateCanvas() {
+            if (heights.length === 0) return;
+            
+            const maxHeight = Math.max(...heights);
+            const barWidth = Math.min(60, 800 / heights.length);
+            const canvasWidth = Math.max(800, barWidth * heights.length + 100);
+            const canvasHeight = 400;
+            const padding = 50;
+            
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            const scale = (canvasHeight - 2 * padding) / (maxHeight + 1);
+            
+            // Draw water first (behind bars)
+            for (let i = 0; i < heights.length; i++) {
+                if (waterTrapped[i] > 0) {
+                    ctx.fillStyle = '#4a90e2';
+                    const waterHeight = waterTrapped[i] * scale;
+                    const barHeight = heights[i] * scale;
+                    ctx.fillRect(
+                        padding + i * barWidth,
+                        canvasHeight - padding - barHeight - waterHeight,
+                        barWidth - 2,
+                        waterHeight
+                    );
+                }
+            }
+            
+            // Draw bars
+            for (let i = 0; i < heights.length; i++) {
+                const barHeight = heights[i] * scale;
+                
+                // Bar color
+                ctx.fillStyle = '#8b4513';
+                ctx.fillRect(
+                    padding + i * barWidth,
+                    canvasHeight - padding - barHeight,
+                    barWidth - 2,
+                    barHeight
+                );
+                
+                // Highlight pointers
+                if (i === l) {
+                    ctx.strokeStyle = '#e74c3c';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(
+                        padding + i * barWidth - 2,
+                        canvasHeight - padding - barHeight - 2,
+                        barWidth + 2,
+                        barHeight + 4
+                    );
+                    ctx.fillStyle = 'rgba(231, 76, 60, 0.3)';
+                    ctx.fillRect(
+                        padding + i * barWidth,
+                        padding,
+                        barWidth - 2,
+                        canvasHeight - 2 * padding
+                    );
+                }
+                
+                if (i === r) {
+                    ctx.strokeStyle = '#2ecc71';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(
+                        padding + i * barWidth - 2,
+                        canvasHeight - padding - barHeight - 2,
+                        barWidth + 2,
+                        barHeight + 4
+                    );
+                    ctx.fillStyle = 'rgba(46, 204, 113, 0.3)';
+                    ctx.fillRect(
+                        padding + i * barWidth,
+                        padding,
+                        barWidth - 2,
+                        canvasHeight - 2 * padding
+                    );
+                }
+                
+                // Draw height labels
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                    heights[i],
+                    padding + i * barWidth + barWidth / 2 - 1,
+                    canvasHeight - padding + 20
+                );
+                
+                // Draw index
+                ctx.fillStyle = '#666';
+                ctx.font = '10px Arial';
+                ctx.fillText(
+                    i,
+                    padding + i * barWidth + barWidth / 2 - 1,
+                    canvasHeight - padding + 35
+                );
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('leftPointer').textContent = l;
+            document.getElementById('rightPointer').textContent = r;
+            document.getElementById('leftMax').textContent = leftMax;
+            document.getElementById('rightMax').textContent = rightMax;
+            document.getElementById('totalWater').textContent = totalWater;
+            document.getElementById('stepCount').textContent = stepCount;
+        }
+        
+        function updateExplanation(text) {
+            document.getElementById('explanation').textContent = text;
+        }
+        
+        // Initialize
+        resetVisualization();
+    </script>
+</body>
+</html>
