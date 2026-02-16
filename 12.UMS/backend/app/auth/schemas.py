@@ -36,5 +36,6 @@ class ChangePasswordRequest(BaseModel):
 class UserProfile(BaseModel):
     id: str
     email: Optional[str] = None
+    full_name: Optional[str] = None
     role: str
     created_at: Optional[str] = None

@@ -159,8 +159,8 @@ export default function Sidebar() {
                         <HiOutlineAcademicCap />
                     </div>
                     <div>
-                        <div className="sidebar-logo-text">Placement Portal</div>
-                        <div className="sidebar-logo-sub">University Management</div>
+                        <div className="sidebar-logo-text">LPU Placements</div>
+                        <div className="sidebar-logo-sub">Lovely Professional University</div>
                     </div>
                 </div>
             </div>

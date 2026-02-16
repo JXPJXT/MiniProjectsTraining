@@ -38,5 +38,6 @@ async def me(current_user: CurrentUser = Depends(get_current_user)):
     return UserProfile(
         id=current_user.id,
         email=current_user.email,
+        full_name=current_user.full_name,
         role=current_user.role,
     )

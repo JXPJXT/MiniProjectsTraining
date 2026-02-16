@@ -14,6 +14,7 @@ class CurrentUser(BaseModel):
     id: str
     role: str
     email: Optional[str] = None
+    full_name: Optional[str] = None
 
 
 async def get_current_user(
@@ -30,9 +31,9 @@ async def get_current_user(
             detail="Invalid authentication token",
         )
     
-    # Fetch role from DB for server-side enforcement (never trust client claims alone)
+    # Fetch user from our own table
     db = get_supabase_admin()
-    result = db.table("users").select("role").eq("id", user_id).execute()
+    result = db.table("users").select("role, email, full_name").eq("id", user_id).execute()
     
     if not result.data:
         raise HTTPException(
@@ -40,10 +41,12 @@ async def get_current_user(
             detail="User not found",
         )
     
+    user = result.data[0]
     return CurrentUser(
         id=user_id,
-        role=result.data[0]["role"],
-        email=payload.get("email"),
+        role=user["role"],
+        email=user.get("email"),
+        full_name=user.get("full_name"),
     )
 
 

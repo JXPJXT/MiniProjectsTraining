@@ -44,8 +44,8 @@ export default function LoginPage() {
                             <HiOutlineAcademicCap />
                         </div>
                         <div>
-                            <div style={{ fontSize: 16, fontWeight: 700 }}>Placement Portal</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>University Management System</div>
+                            <div style={{ fontSize: 16, fontWeight: 700 }}>LPU Placement Portal</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Lovely Professional University</div>
                         </div>
                     </div>
 
@@ -87,12 +87,12 @@ export default function LoginPage() {
                         )}
 
                         <div className="form-group">
-                            <label className="form-label">Email Address</label>
+                            <label className="form-label">Username (Email)</label>
                             <input
                                 id="email-input"
                                 className="form-input"
                                 type="email"
-                                placeholder="your@university.edu"
+                                placeholder="your.name@lpu.in"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -186,21 +186,22 @@ export default function LoginPage() {
 
             <div className="auth-right">
                 <div className="auth-right-content">
-                    <h2>Placement Portal</h2>
-                    <p>
-                        Enterprise-grade placement management system designed for
-                        universities. Manage drives, track careers, and connect
-                        students with opportunities — all in one platform.
+                    <h2>Lovely Professional University</h2>
+                    <p style={{ fontSize: 14, opacity: 0.85, maxWidth: 380, lineHeight: 1.7 }}>
+                        Official Placement Management Portal — Division of Career Services.
+                        Manage campus drives, track placements, verify documents, and connect
+                        students with top recruiters across India.
                     </p>
-                    <div style={{ display: 'flex', gap: 24, marginTop: 40, justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', gap: 32, marginTop: 40, justifyContent: 'center' }}>
                         {[
-                            { label: 'Drives', value: '100+' },
-                            { label: 'Students', value: '5K+' },
-                            { label: 'Placed', value: '92%' },
+                            { label: 'Companies', value: '750+' },
+                            { label: 'Students', value: '30K+' },
+                            { label: 'Placed', value: '95%' },
+                            { label: 'Avg CTC', value: '₹8L+' },
                         ].map((stat) => (
                             <div key={stat.label} style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: 28, fontWeight: 800, color: 'white' }}>{stat.value}</div>
-                                <div style={{ fontSize: 12, color: 'var(--primary-300)', marginTop: 4 }}>{stat.label}</div>
+                                <div style={{ fontSize: 11, color: 'var(--primary-300)', marginTop: 4, letterSpacing: '0.5px', textTransform: 'uppercase' }}>{stat.label}</div>
                             </div>
                         ))}
                     </div>

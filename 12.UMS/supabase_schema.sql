@@ -44,9 +44,12 @@ CREATE TYPE verification_status AS ENUM (
 -- =============================================================================
 
 CREATE TABLE users (
-    id          UUID PRIMARY KEY,
-    role        user_role NOT NULL,
-    created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email           TEXT UNIQUE NOT NULL,
+    password_hash   TEXT NOT NULL,
+    full_name       TEXT,
+    role            user_role NOT NULL,
+    created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =============================================================================
