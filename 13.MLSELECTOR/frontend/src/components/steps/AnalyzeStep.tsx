@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import { useQuery } from "@tanstack/react-query";
 import { getEDA, type EDAResult, type ColumnDetail } from "@/lib/api";
 import {
@@ -43,8 +45,8 @@ function CorrelationHeatmap({ data }: { data: EDAResult["correlation"] }) {
                     </div>
                 ))}
                 {values.map((row, ri) => (
-                    <>
-                        <div key={`label-${ri}`} className="text-right text-slate-500 pr-2 truncate font-medium" title={columns[ri]}>
+                    <React.Fragment key={`row-${ri}`}>
+                        <div className="text-right text-slate-500 pr-2 truncate font-medium" title={columns[ri]}>
                             {columns[ri].length > 10 ? columns[ri].slice(0, 10) + "…" : columns[ri]}
                         </div>
                         {row.map((v, ci) => (
@@ -57,7 +59,7 @@ function CorrelationHeatmap({ data }: { data: EDAResult["correlation"] }) {
                                 {v !== null ? v.toFixed(1) : "–"}
                             </div>
                         ))}
-                    </>
+                    </React.Fragment>
                 ))}
             </div>
         </div>
