@@ -12,7 +12,7 @@ async def list_users(
     role: Optional[str] = None,
 ) -> list:
     db = get_supabase_admin()
-    query = db.table("users").select("*").order("created_at", desc=True)
+    query = db.table("users").select("id, email, full_name, role, created_at").order("created_at", desc=True)
     if role:
         query = query.eq("role", role)
     result = query.range(offset, offset + limit - 1).execute()

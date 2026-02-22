@@ -6,6 +6,7 @@ import { authAPI } from '@/lib/api';
 interface User {
     id: string;
     email: string;
+    full_name?: string;
     role: string;
 }
 
@@ -57,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { access_token, refresh_token, user_id, role } = res.data;
         localStorage.setItem('access_token', access_token);
         localStorage.setItem('refresh_token', refresh_token);
-        setUser({ id: user_id, email: data.email, role });
+        setUser({ id: user_id, email: data.email, full_name: data.full_name, role });
     };
 
     const logout = () => {

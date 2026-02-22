@@ -36,98 +36,49 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="auth-page">
-            <div className="auth-left">
-                <div className="auth-card">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
-                        <div className="sidebar-logo-icon">
-                            <HiOutlineAcademicCap />
+        <div className="login-page">
+            <div className="login-left">
+                <div className="login-card">
+                    <div className="login-header">
+                        <div className="login-brand">
+                            <div className="login-brand-icon">
+                                <HiOutlineAcademicCap />
+                            </div>
+                            <div>
+                                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>LPU Placement Portal</div>
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>Lovely Professional University</div>
+                            </div>
                         </div>
-                        <div>
-                            <div style={{ fontSize: 16, fontWeight: 700 }}>LPU Placement Portal</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Lovely Professional University</div>
-                        </div>
+                        <h1 className="login-title">{isRegister ? 'Create Account' : 'Welcome Back'}</h1>
+                        <p className="login-subtitle">
+                            {isRegister ? 'Register to access the placement portal' : 'Sign in to your placement portal account'}
+                        </p>
                     </div>
 
-                    <h1 className="auth-title">{isRegister ? 'Create Account' : 'Welcome Back'}</h1>
-                    <p className="auth-subtitle">
-                        {isRegister
-                            ? 'Register to access the placement portal'
-                            : 'Sign in to your placement portal account'}
-                    </p>
+                    {error && <div className="error-message">{error}</div>}
 
-                    {error && (
-                        <div style={{
-                            padding: '12px 16px',
-                            background: 'rgba(244, 63, 94, 0.1)',
-                            border: '1px solid rgba(244, 63, 94, 0.2)',
-                            borderRadius: 'var(--radius-md)',
-                            color: 'var(--danger-400)',
-                            fontSize: 13,
-                            marginBottom: 20,
-                        }}>
-                            {error}
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} className="login-form">
                         {isRegister && (
                             <div className="form-group">
                                 <label className="form-label">Full Name</label>
-                                <input
-                                    id="full-name-input"
-                                    className="form-input"
-                                    type="text"
-                                    placeholder="John Doe"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    required
-                                />
+                                <input id="full-name-input" className="form-input" type="text" placeholder="John Doe"
+                                    value={fullName} onChange={(e) => setFullName(e.target.value)} required />
                             </div>
                         )}
 
                         <div className="form-group">
-                            <label className="form-label">Username (Email)</label>
-                            <input
-                                id="email-input"
-                                className="form-input"
-                                type="email"
-                                placeholder="your.name@lpu.in"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
+                            <label className="form-label">Email Address</label>
+                            <input id="email-input" className="form-input" type="email" placeholder="your.name@lpu.in"
+                                value={email} onChange={(e) => setEmail(e.target.value)} required />
                         </div>
 
                         <div className="form-group">
                             <label className="form-label">Password</label>
                             <div style={{ position: 'relative' }}>
-                                <input
-                                    id="password-input"
-                                    className="form-input"
-                                    type={showPassword ? 'text' : 'password'}
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    minLength={6}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    style={{
-                                        position: 'absolute',
-                                        right: 12,
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'var(--text-muted)',
-                                        cursor: 'pointer',
-                                        fontSize: 18,
-                                        display: 'flex',
-                                    }}
-                                >
+                                <input id="password-input" className="form-input" type={showPassword ? 'text' : 'password'}
+                                    placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)}
+                                    required minLength={6} style={{ paddingRight: 42 }} />
+                                <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
                                     {showPassword ? <HiOutlineEyeOff /> : <HiOutlineEye />}
                                 </button>
                             </div>
@@ -136,12 +87,7 @@ export default function LoginPage() {
                         {isRegister && (
                             <div className="form-group">
                                 <label className="form-label">Role</label>
-                                <select
-                                    id="role-select"
-                                    className="form-select"
-                                    value={role}
-                                    onChange={(e) => setRole(e.target.value)}
-                                >
+                                <select id="role-select" className="form-select" value={role} onChange={(e) => setRole(e.target.value)}>
                                     <option value="student">Student</option>
                                     <option value="faculty">Faculty</option>
                                     <option value="tpc">TPC (Training & Placement Cell)</option>
@@ -150,13 +96,8 @@ export default function LoginPage() {
                             </div>
                         )}
 
-                        <button
-                            id="auth-submit-btn"
-                            className="btn btn-primary btn-lg w-full"
-                            type="submit"
-                            disabled={loading}
-                            style={{ marginTop: 8 }}
-                        >
+                        <button id="auth-submit-btn" className="btn btn-primary" type="submit" disabled={loading}
+                            style={{ marginTop: 8, width: '100%', justifyContent: 'center', padding: '12px' }}>
                             {loading ? (
                                 <span className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />
                             ) : (
@@ -165,43 +106,31 @@ export default function LoginPage() {
                         </button>
                     </form>
 
-                    <div style={{ textAlign: 'center', marginTop: 24 }}>
-                        <button
-                            id="toggle-auth-mode"
-                            onClick={() => { setIsRegister(!isRegister); setError(''); }}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'var(--primary-400)',
-                                cursor: 'pointer',
-                                fontSize: 13,
-                                fontFamily: 'inherit',
-                            }}
-                        >
+                    <div className="login-toggle">
+                        <button id="toggle-auth-mode" onClick={() => { setIsRegister(!isRegister); setError(''); }}>
                             {isRegister ? 'Already have an account? Sign In' : "Don't have an account? Register"}
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className="auth-right">
-                <div className="auth-right-content">
-                    <h2>Lovely Professional University</h2>
-                    <p style={{ fontSize: 14, opacity: 0.85, maxWidth: 380, lineHeight: 1.7 }}>
+            <div className="login-right">
+                <div className="login-hero">
+                    <h2 className="login-hero-title">Lovely Professional<br />University</h2>
+                    <p className="login-hero-text">
                         Official Placement Management Portal — Division of Career Services.
                         Manage campus drives, track placements, verify documents, and connect
                         students with top recruiters across India.
                     </p>
-                    <div style={{ display: 'flex', gap: 32, marginTop: 40, justifyContent: 'center' }}>
+                    <div className="login-stats">
                         {[
                             { label: 'Companies', value: '750+' },
                             { label: 'Students', value: '30K+' },
                             { label: 'Placed', value: '95%' },
-                            { label: 'Avg CTC', value: '₹8L+' },
                         ].map((stat) => (
-                            <div key={stat.label} style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: 28, fontWeight: 800, color: 'white' }}>{stat.value}</div>
-                                <div style={{ fontSize: 11, color: 'var(--primary-300)', marginTop: 4, letterSpacing: '0.5px', textTransform: 'uppercase' }}>{stat.label}</div>
+                            <div key={stat.label} className="login-stat">
+                                <div className="login-stat-value">{stat.value}</div>
+                                <div className="login-stat-label">{stat.label}</div>
                             </div>
                         ))}
                     </div>

@@ -12,99 +12,89 @@ import {
     HiOutlineTrendingUp,
     HiOutlineClipboardList,
     HiOutlineAcademicCap,
+    HiOutlineClock,
 } from 'react-icons/hi';
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'tpc';
+    const role = user?.role || 'student';
+
+    const getDashboardTitle = () => {
+        switch (role) {
+            case 'admin':
+            case 'super_admin': return 'Admin Dashboard';
+            case 'tpc': return 'TPC Dashboard';
+            case 'faculty': return 'Faculty Dashboard';
+            default: return 'My Dashboard';
+        }
+    };
+
+    const renderDashboard = () => {
+        switch (role) {
+            case 'admin':
+            case 'super_admin':
+            case 'tpc':
+                return <AdminDashboard />;
+            case 'faculty':
+                return <FacultyDashboard />;
+            default:
+                return <StudentDashboard />;
+        }
+    };
 
     return (
         <>
             <div className="top-bar">
-                <h1 className="top-bar-title">
-                    {isAdmin ? 'Admin Dashboard' : 'My Dashboard'}
-                </h1>
+                <h1 className="top-bar-title">{getDashboardTitle()}</h1>
                 <div className="top-bar-actions">
-                    <span className="text-sm text-muted">
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                         Welcome, <strong style={{ color: 'var(--primary-400)' }}>{user?.email}</strong>
+                        <span className="badge badge-primary" style={{ marginLeft: 8, fontSize: 10 }}>
+                            {role.replace('_', ' ').toUpperCase()}
+                        </span>
                     </span>
                 </div>
             </div>
             <div className="page-content">
-                {isAdmin ? <AdminDashboard /> : <StudentDashboard />}
+                {renderDashboard()}
             </div>
         </>
     );
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ADMIN / TPC DASHBOARD                                     */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function AdminDashboard() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadDashboard();
-    }, []);
+    useEffect(() => { loadDashboard(); }, []);
 
     const loadDashboard = async () => {
         try {
             const res = await adminAPI.dashboard();
             setStats(res.data);
-        } catch (err) {
-            console.error('Dashboard load error', err);
-        } finally {
-            setLoading(false);
-        }
+        } catch (err) { console.error('Dashboard load error', err); }
+        finally { setLoading(false); }
     };
 
-    if (loading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-                <div className="spinner" />
-            </div>
-        );
-    }
-
-    if (!stats) {
-        return <div className="empty-state"><p className="empty-state-text">Failed to load dashboard</p></div>;
-    }
+    if (loading) return <LoadingState />;
+    if (!stats) return <EmptyState text="Failed to load dashboard data" />;
 
     return (
         <div className="animate-in">
             <div className="stats-grid">
-                <StatCard
-                    icon={<HiOutlineUserGroup />}
-                    label="Total Users"
-                    value={stats.user_stats?.total || 0}
-                    sub={`${stats.user_stats?.student || 0} students`}
-                    variant="primary"
-                />
-                <StatCard
-                    icon={<HiOutlineBriefcase />}
-                    label="Active Drives"
-                    value={stats.drive_stats?.open || 0}
-                    sub={`${stats.drive_stats?.total || 0} total drives`}
-                    variant="accent"
-                />
-                <StatCard
-                    icon={<HiOutlineDocumentText />}
-                    label="Pending Reviews"
-                    value={stats.document_stats?.pending || 0}
-                    sub={`${stats.document_stats?.approved || 0} approved`}
-                    variant="warning"
-                />
-                <StatCard
-                    icon={<HiOutlineCheckCircle />}
-                    label="Students Placed"
-                    value={stats.placement_stats?.selected || 0}
-                    sub={`${stats.placement_stats?.offers_accepted || 0} offers accepted`}
-                    variant="accent"
-                />
+                <StatCard icon={<HiOutlineUserGroup />} label="Total Users" value={stats.user_stats?.total || 0} sub={`${stats.user_stats?.student || 0} students`} variant="primary" />
+                <StatCard icon={<HiOutlineBriefcase />} label="Active Drives" value={stats.drive_stats?.open || 0} sub={`${stats.drive_stats?.total || 0} total`} variant="accent" />
+                <StatCard icon={<HiOutlineDocumentText />} label="Pending Reviews" value={stats.document_stats?.pending || 0} sub={`${stats.document_stats?.approved || 0} approved`} variant="warning" />
+                <StatCard icon={<HiOutlineCheckCircle />} label="Placed" value={stats.placement_stats?.selected || 0} sub={`${stats.placement_stats?.offers_accepted || 0} accepted`} variant="accent" />
             </div>
 
             <div className="grid-2">
                 <div className="card">
                     <div className="card-header">
-                        <h3 className="card-title">📊 Placement Overview</h3>
+                        <h3 className="card-title">📊 Placement Funnel</h3>
                     </div>
                     <div className="card-body">
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -121,27 +111,15 @@ function AdminDashboard() {
                     </div>
                     <div className="card-body">
                         {(stats.recent_audit_logs || []).length === 0 ? (
-                            <p className="text-muted text-sm">No recent activity</p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No recent activity</p>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {(stats.recent_audit_logs || []).slice(0, 6).map((log: any, i: number) => (
-                                    <div key={i} style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 12,
-                                        padding: '10px 0',
-                                        borderBottom: '1px solid var(--border-color)',
-                                    }}>
-                                        <div style={{
-                                            width: 8,
-                                            height: 8,
-                                            borderRadius: '50%',
-                                            background: 'var(--primary-500)',
-                                            flexShrink: 0,
-                                        }} />
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-glass)' }}>
+                                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary-500)', flexShrink: 0 }} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{log.action}</div>
-                                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{log.entity} • {new Date(log.created_at).toLocaleString()}</div>
+                                            <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{log.action.replace(/_/g, ' ')}</div>
+                                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{log.entity} • {new Date(log.created_at).toLocaleDateString()}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -151,28 +129,18 @@ function AdminDashboard() {
                 </div>
             </div>
 
-            <div className="card mt-24">
+            <div className="card" style={{ marginTop: 24 }}>
                 <div className="card-header">
                     <h3 className="card-title">👥 User Distribution</h3>
                 </div>
                 <div className="card-body">
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16 }}>
-                        {Object.entries(stats.user_stats || {})
-                            .filter(([key]) => key !== 'total')
-                            .map(([role, count]) => (
-                                <div key={role} style={{
-                                    padding: 16,
-                                    background: 'var(--bg-glass)',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: '1px solid var(--border-color)',
-                                    textAlign: 'center',
-                                }}>
-                                    <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>{count as number}</div>
-                                    <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'capitalize', marginTop: 4 }}>
-                                        {(role as string).replace('_', ' ')}
-                                    </div>
-                                </div>
-                            ))}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+                        {Object.entries(stats.user_stats || {}).filter(([key]) => key !== 'total').map(([role, count]) => (
+                            <div key={role} style={{ padding: '16px 12px', background: 'var(--bg-glass)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                                <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)' }}>{count as number}</div>
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize', marginTop: 4, letterSpacing: '0.5px' }}>{(role as string).replace('_', ' ')}</div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -180,6 +148,81 @@ function AdminDashboard() {
     );
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* FACULTY DASHBOARD                                         */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function FacultyDashboard() {
+    const [drives, setDrives] = useState<any[]>([]);
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => { loadFacultyData(); }, []);
+
+    const loadFacultyData = async () => {
+        try {
+            const [drivesRes, notifsRes] = await Promise.allSettled([
+                drivesAPI.list({ status: 'open' }),
+                notificationsAPI.list({ limit: 5, unread_only: true }),
+            ]);
+            if (drivesRes.status === 'fulfilled') setDrives(drivesRes.value.data?.data || []);
+            if (notifsRes.status === 'fulfilled') setNotifications(notifsRes.value.data?.data || []);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
+
+    if (loading) return <LoadingState />;
+
+    return (
+        <div className="animate-in">
+            <div className="stats-grid">
+                <StatCard icon={<HiOutlineBriefcase />} label="Active Drives" value={drives.length} sub="Open for registration" variant="primary" />
+                <StatCard icon={<HiOutlineBell />} label="Notifications" value={notifications.length} sub="Unread" variant="warning" />
+                <StatCard icon={<HiOutlineAcademicCap />} label="Role" value="Faculty" sub="Duty leave approvals" variant="accent" />
+                <StatCard icon={<HiOutlineClock />} label="Semester" value="Jan-May '26" sub="2025-26 Batch" variant="primary" />
+            </div>
+
+            <div className="grid-2">
+                <div className="card">
+                    <div className="card-header">
+                        <h3 className="card-title">🏢 Active Drives</h3>
+                    </div>
+                    <div className="card-body">
+                        {drives.length === 0 ? (
+                            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No active drives currently</p>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {drives.slice(0, 6).map((drive: any) => (
+                                    <DriveItem key={drive.drive_id} drive={drive} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="card">
+                    <div className="card-header">
+                        <h3 className="card-title">🔔 Notifications</h3>
+                    </div>
+                    <div className="card-body">
+                        {notifications.length === 0 ? (
+                            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>All caught up!</p>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                {notifications.map((n: any) => (
+                                    <NotificationItem key={n.id} notification={n} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* STUDENT DASHBOARD                                         */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function StudentDashboard() {
     const [profile, setProfile] = useState<any>(null);
     const [completeness, setCompleteness] = useState<any>(null);
@@ -187,9 +230,7 @@ function StudentDashboard() {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadStudentData();
-    }, []);
+    useEffect(() => { loadStudentData(); }, []);
 
     const loadStudentData = async () => {
         try {
@@ -199,61 +240,27 @@ function StudentDashboard() {
                 drivesAPI.eligible(),
                 notificationsAPI.list({ limit: 5, unread_only: true }),
             ]);
-
             if (profileRes.status === 'fulfilled') setProfile(profileRes.value.data);
             if (completenessRes.status === 'fulfilled') setCompleteness(completenessRes.value.data);
             if (drivesRes.status === 'fulfilled') setDrives(drivesRes.value.data?.data || []);
             if (notifsRes.status === 'fulfilled') setNotifications(notifsRes.value.data?.data || []);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
     };
 
-    if (loading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-                <div className="spinner" />
-            </div>
-        );
-    }
+    if (loading) return <LoadingState />;
 
     return (
         <div className="animate-in">
             <div className="stats-grid">
-                <StatCard
-                    icon={<HiOutlineClipboardList />}
-                    label="Profile Complete"
-                    value={`${completeness?.percentage || 0}%`}
-                    sub={`${completeness?.completed || 0}/${completeness?.total || 5} sections`}
-                    variant="primary"
-                />
-                <StatCard
-                    icon={<HiOutlineBriefcase />}
-                    label="Eligible Drives"
-                    value={drives.length}
-                    sub="Open for registration"
-                    variant="accent"
-                />
-                <StatCard
-                    icon={<HiOutlineBell />}
-                    label="Notifications"
-                    value={notifications.length}
-                    sub="Unread"
-                    variant="warning"
-                />
-                <StatCard
-                    icon={<HiOutlineTrendingUp />}
-                    label="CGPA"
-                    value={profile?.cgpa || 'N/A'}
-                    sub={profile?.stream || 'Update profile'}
-                    variant="primary"
-                />
+                <StatCard icon={<HiOutlineClipboardList />} label="Profile" value={`${completeness?.percentage || 0}%`} sub={`${completeness?.completed || 0}/${completeness?.total || 5} sections`} variant="primary" />
+                <StatCard icon={<HiOutlineBriefcase />} label="Eligible Drives" value={drives.length} sub="Open now" variant="accent" />
+                <StatCard icon={<HiOutlineBell />} label="Notifications" value={notifications.length} sub="Unread" variant="warning" />
+                <StatCard icon={<HiOutlineTrendingUp />} label="CGPA" value={profile?.cgpa || 'N/A'} sub={profile?.stream || 'Update profile'} variant="primary" />
             </div>
 
             {completeness && completeness.percentage < 100 && (
-                <div className="card mb-24">
+                <div className="card" style={{ marginBottom: 24 }}>
                     <div className="card-header">
                         <h3 className="card-title">📋 Complete Your Profile</h3>
                         <span className="badge badge-warning">{completeness.percentage}%</span>
@@ -262,23 +269,16 @@ function StudentDashboard() {
                         <div className="progress-bar" style={{ marginBottom: 16 }}>
                             <div className="progress-bar-fill" style={{ width: `${completeness.percentage}%` }} />
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
                             {Object.entries(completeness.sections || {}).map(([key, done]) => (
                                 <div key={key} style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    padding: '8px 12px',
+                                    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
                                     borderRadius: 'var(--radius-sm)',
-                                    background: done ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-                                    border: `1px solid ${done ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)'}`,
+                                    background: done ? 'rgba(16, 185, 129, 0.08)' : 'rgba(244, 63, 94, 0.08)',
+                                    border: `1px solid ${done ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)'}`,
                                 }}>
-                                    <span style={{ color: done ? 'var(--accent-400)' : 'var(--danger-400)' }}>
-                                        {done ? '✓' : '✗'}
-                                    </span>
-                                    <span style={{ fontSize: 13, textTransform: 'capitalize', color: 'var(--text-secondary)' }}>
-                                        {key.replace('_', ' ')}
-                                    </span>
+                                    <span style={{ color: done ? 'var(--accent-400)' : 'var(--danger-400)', fontSize: 14 }}>{done ? '✓' : '✗'}</span>
+                                    <span style={{ fontSize: 12, textTransform: 'capitalize', color: 'var(--text-secondary)' }}>{key.replace('_', ' ')}</span>
                                 </div>
                             ))}
                         </div>
@@ -288,30 +288,14 @@ function StudentDashboard() {
 
             <div className="grid-2">
                 <div className="card">
-                    <div className="card-header">
-                        <h3 className="card-title">🏢 Available Drives</h3>
-                    </div>
+                    <div className="card-header"><h3 className="card-title">🏢 Available Drives</h3></div>
                     <div className="card-body">
                         {drives.length === 0 ? (
-                            <p className="text-muted text-sm">No eligible drives available</p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No eligible drives right now</p>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                 {drives.slice(0, 5).map((drive: any) => (
-                                    <div key={drive.drive_id} style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '12px 16px',
-                                        background: 'var(--bg-glass)',
-                                        borderRadius: 'var(--radius-md)',
-                                        border: '1px solid var(--border-color)',
-                                    }}>
-                                        <div>
-                                            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{drive.company_name}</div>
-                                            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{drive.drive_type} • {drive.drive_date || 'TBD'}</div>
-                                        </div>
-                                        <span className="badge badge-accent">{drive.status}</span>
-                                    </div>
+                                    <DriveItem key={drive.drive_id} drive={drive} />
                                 ))}
                             </div>
                         )}
@@ -319,32 +303,40 @@ function StudentDashboard() {
                 </div>
 
                 <div className="card">
-                    <div className="card-header">
-                        <h3 className="card-title">🔔 Recent Notifications</h3>
-                    </div>
+                    <div className="card-header"><h3 className="card-title">🔔 Notifications</h3></div>
                     <div className="card-body">
                         {notifications.length === 0 ? (
-                            <p className="text-muted text-sm">No unread notifications</p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>All caught up!</p>
                         ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {notifications.map((n: any) => (
-                                    <div key={n.id} style={{
-                                        padding: '10px 14px',
-                                        background: 'rgba(99, 102, 241, 0.05)',
-                                        borderRadius: 'var(--radius-md)',
-                                        borderLeft: '3px solid var(--primary-500)',
-                                    }}>
-                                        <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{n.payload?.message || n.type}</div>
-                                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                                            {new Date(n.created_at).toLocaleString()}
-                                        </div>
-                                    </div>
+                                    <NotificationItem key={n.id} notification={n} />
                                 ))}
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* SHARED COMPONENTS                                         */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+function LoadingState() {
+    return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 80 }}>
+            <div className="spinner" />
+        </div>
+    );
+}
+
+function EmptyState({ text }: { text: string }) {
+    return (
+        <div className="empty-state">
+            <p className="empty-state-text">{text}</p>
         </div>
     );
 }
@@ -375,6 +367,34 @@ function ProgressItem({ label, value, max, color }: { label: string; value: numb
             <div className="progress-bar">
                 <div className="progress-bar-fill" style={{ width: `${percent}%`, background: color }} />
             </div>
+        </div>
+    );
+}
+
+function DriveItem({ drive }: { drive: any }) {
+    return (
+        <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 14px', background: 'var(--bg-glass)', borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-color)',
+        }}>
+            <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{drive.company_name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{drive.drive_type} • {drive.drive_date || 'TBD'}</div>
+            </div>
+            <span className={`badge badge-${drive.status === 'open' ? 'accent' : 'ghost'}`}>{drive.status}</span>
+        </div>
+    );
+}
+
+function NotificationItem({ notification }: { notification: any }) {
+    return (
+        <div style={{
+            padding: '10px 14px', background: 'rgba(99, 102, 241, 0.04)',
+            borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--primary-500)',
+        }}>
+            <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{notification.payload?.message || notification.type}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{new Date(notification.created_at).toLocaleString()}</div>
         </div>
     );
 }

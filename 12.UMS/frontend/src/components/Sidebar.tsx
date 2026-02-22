@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -19,9 +20,11 @@ import {
     HiOutlineChartBar,
     HiOutlineFolder,
     HiOutlineCheckCircle,
+    HiOutlineSun,
+    HiOutlineMoon,
 } from 'react-icons/hi';
 
-const navConfig: Record<string, Array<{ section: string; items: Array<{ label: string; href: string; icon: any; roles?: string[] }> }>> = {
+const navConfig: Record<string, Array<{ section: string; items: Array<{ label: string; href: string; icon: any }> }>> = {
     student: [
         {
             section: 'Main',
@@ -79,6 +82,7 @@ const navConfig: Record<string, Array<{ section: string; items: Array<{ label: s
             section: 'Overview',
             items: [
                 { label: 'Dashboard', href: '/dashboard', icon: HiOutlineHome },
+                { label: 'Analytics', href: '/dashboard/analytics', icon: HiOutlineChartBar },
             ],
         },
         {
@@ -87,6 +91,7 @@ const navConfig: Record<string, Array<{ section: string; items: Array<{ label: s
                 { label: 'Students', href: '/dashboard/students', icon: HiOutlineAcademicCap },
                 { label: 'Drives', href: '/dashboard/drives', icon: HiOutlineBriefcase },
                 { label: 'Documents', href: '/dashboard/documents', icon: HiOutlineDocumentText },
+                { label: 'Offers', href: '/dashboard/offers', icon: HiOutlineFolder },
             ],
         },
         {
@@ -146,6 +151,22 @@ const navConfig: Record<string, Array<{ section: string; items: Array<{ label: s
 export default function Sidebar() {
     const pathname = usePathname();
     const { user, logout } = useAuth();
+    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+    useEffect(() => {
+        const saved = localStorage.getItem('theme') as 'dark' | 'light' | null;
+        if (saved) {
+            setTheme(saved);
+            document.documentElement.setAttribute('data-theme', saved);
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        const next = theme === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    };
 
     if (!user) return null;
 
@@ -173,11 +194,7 @@ export default function Sidebar() {
                             const Icon = item.icon;
                             const isActive = pathname === item.href;
                             return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={`nav-item ${isActive ? 'active' : ''}`}
-                                >
+                                <Link key={item.href} href={item.href} className={`nav-item ${isActive ? 'active' : ''}`}>
                                     <span className="nav-item-icon"><Icon /></span>
                                     {item.label}
                                 </Link>
@@ -196,13 +213,11 @@ export default function Sidebar() {
                         <div className="sidebar-user-name">{user.email}</div>
                         <div className="sidebar-user-role">{user.role.replace('_', ' ')}</div>
                     </div>
+                    <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+                        {theme === 'dark' ? <HiOutlineSun /> : <HiOutlineMoon />}
+                    </button>
                 </div>
-                <button
-                    id="logout-btn"
-                    className="nav-item"
-                    onClick={logout}
-                    style={{ marginTop: 8, color: 'var(--danger-400)' }}
-                >
+                <button id="logout-btn" className="nav-item" onClick={logout} style={{ marginTop: 8, color: 'var(--danger-400)' }}>
                     <span className="nav-item-icon"><HiOutlineLogout /></span>
                     Sign Out
                 </button>

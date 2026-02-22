@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Query
 from typing import Optional
 from pydantic import BaseModel
-from app.core.deps import require_roles, CurrentUser
+from app.core.deps import require_roles, get_current_user, CurrentUser
 from app.users import service
 
 router = APIRouter(prefix="/users", tags=["User Management"])
@@ -18,7 +18,7 @@ async def list_users(
     limit: int = Query(50, le=200),
     offset: int = Query(0, ge=0),
     role: Optional[str] = None,
-    current_user: CurrentUser = Depends(require_roles(["admin", "super_admin"])),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     users = await service.list_users(limit, offset, role)
     return {"data": users, "count": len(users)}

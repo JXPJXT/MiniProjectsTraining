@@ -1,168 +1,244 @@
-# 🎓 Placement Portal — University Management System
+# 🎓 LPU Placement Portal
 
-> Enterprise-grade, cloud-native placement management system built with **FastAPI + Supabase** backend and **Next.js** frontend. Role-based access, document workflows, drive management, messaging, and real-time notifications.
+> Lovely Professional University — Campus Placement Management System
+
+A full-stack placement management portal built for LPU with role-based dashboards, drive management, student profiles, documents, messaging, and real-time notifications.
 
 ---
 
-## 🏗️ Architecture
+## 🏗 Architecture
 
 ```
-12.UMS/
-├── backend/                 # FastAPI + Supabase API server
-│   ├── app/
-│   │   ├── admin/          # Dashboard & analytics endpoints
-│   │   ├── audit/          # Audit logging
-│   │   ├── auth/           # Registration, login, JWT tokens
-│   │   ├── core/           # Config, database, deps, security, storage
-│   │   ├── documents/      # Document upload, verification, signed URLs
-│   │   ├── drives/         # Placement drives, rounds, registrations
-│   │   ├── messaging/      # DMs, broadcasts, read receipts
-│   │   ├── notifications/  # In-app notifications
-│   │   ├── placements/     # Placement profiles, eligibility
-│   │   ├── students/       # Student CRUD, contacts, skills, preferences
-│   │   ├── users/          # User management (admin)
-│   │   └── main.py         # FastAPI app entrypoint
-│   ├── requirements.txt
-│   └── .env.example
-├── frontend/                # Next.js 16 + TypeScript
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── login/             # Auth page
-│   │   │   ├── dashboard/         # Protected dashboard
-│   │   │   │   ├── analytics/     # Placement reports
-│   │   │   │   ├── audit/         # Audit logs (admin)
-│   │   │   │   ├── documents/     # Document management
-│   │   │   │   ├── drives/        # Placement drives
-│   │   │   │   ├── messages/      # Messaging
-│   │   │   │   ├── my-drives/     # Student registrations
-│   │   │   │   ├── notifications/ # Notifications
-│   │   │   │   ├── offers/        # Independent offers
-│   │   │   │   ├── placement-profile/ # Placement profile
-│   │   │   │   ├── profile/       # Student profile
-│   │   │   │   ├── settings/      # System settings
-│   │   │   │   ├── students/      # Student listing
-│   │   │   │   └── users/         # User management
-│   │   │   └── globals.css        # Design system
-│   │   ├── components/
-│   │   │   └── Sidebar.tsx        # Role-based navigation
-│   │   ├── context/
-│   │   │   └── AuthContext.tsx     # Auth state management
-│   │   └── lib/
-│   │       └── api.ts             # API client library
-│   └── .env.local
-└── supabase_schema.sql      # Database schema
+┌──────────────────────────────────────────────────────────┐
+│  Frontend (Next.js 14 + TypeScript)                      │
+│  Port: 3000                                              │
+│  ├── Login / Register (JWT auth)                         │
+│  ├── Role-based Sidebar Navigation                       │
+│  ├── Dark / Light Theme Toggle                           │
+│  └── Role-specific Dashboards                            │
+├──────────────────────────────────────────────────────────┤
+│  Backend API (FastAPI + Python)                          │
+│  Port: 8000                                              │
+│  ├── JWT Authentication (access + refresh tokens)        │
+│  ├── RBAC (Role-Based Access Control)                    │
+│  ├── 10 API Modules under /api/v1/                       │
+│  └── Supabase Client (DB + Storage)                      │
+├──────────────────────────────────────────────────────────┤
+│  Database (Supabase PostgreSQL)                          │
+│  ├── 15+ tables with ENUMs, FKs, indexes                 │
+│  ├── pgcrypto for password hashing                       │
+│  └── Row Level Security (optional)                       │
+├──────────────────────────────────────────────────────────┤
+│  File Storage (Supabase Storage)                         │
+│  └── Resumes, certificates, offer letters                │
+└──────────────────────────────────────────────────────────┘
 ```
 
-## ✨ Features
+---
 
-### 🔐 Authentication & Authorization
-- JWT-based auth with access + refresh tokens
-- Server-side RBAC (student, faculty, TPC, admin, super_admin)
-- Supabase Auth integration with database user table sync
-- Auto-refresh on 401 with seamless token rotation
+## 🔑 Login Credentials (Seeded)
 
-### 👨‍🎓 Student Management
-- Full CRUD with contacts, family, skills, preferences
-- Profile completeness tracking with section indicators
-- Stream and batch filtering
+| Email              | Password      | Role    |
+|--------------------|---------------|---------|
+| `japjot@lpu.in`    | `japjot123`   | student |
+| `aarav@lpu.in`     | `aarav123`    | student |
+| `priya@lpu.in`     | `priya123`    | student |
+| `admin@lpu.in`     | `admin123`    | admin   |
+| `tpc@lpu.in`       | `tpc123`      | tpc     |
+| `faculty@lpu.in`   | `faculty123`  | faculty |
+| `sam@gmail.com`    | `sam123`      | admin   |
 
-### 🏢 Placement Drives
-- Create, list, and manage placement drives
-- Student registration and cancellation
-- Multi-round drive support with attendance tracking
-- Duty leave requests with proof upload and approval workflow
-- Selection status with offer accept/reject flow
+---
 
-### 📄 Document Management
-- Upload to Supabase Storage (never blobs in DB)
-- Verification workflow with approve/reject + remarks
-- Re-upload flow for rejected documents
-- Secure signed URLs for file access
+## 📦 Modules & Features
 
-### 📊 Analytics & Reports
-- Admin dashboard with user/drive/document/placement stats
-- Placement reports with stream and batch filtering
-- Placement rate visualization
+### Backend API Modules (`/api/v1/`)
 
-### 💬 Messaging
-- Direct messages with read receipts
-- Conversation threads
-- Broadcast messaging to role/stream cohorts
-- Unread count tracking
+| Module           | Prefix             | Description |
+|------------------|--------------------|-------------|
+| **Auth**         | `/auth`            | Register, Login, Refresh, `/me` endpoint |
+| **Students**     | `/students`        | CRUD, contacts, family, skills, preferences, completeness |
+| **Placements**   | `/placements`      | Placement profiles, policy acceptance, eligibility check |
+| **Drives**       | `/drives`          | Drive CRUD, rounds, registration, attendance, duty leave, selections, independent offers |
+| **Documents**    | `/documents`       | Upload to Supabase Storage, verification workflow |
+| **Notifications**| `/notifications`   | In-app notifications, unread count, mark read |
+| **Messaging**    | `/messages`        | DMs, threads, conversations, broadcast |
+| **Users**        | `/users`           | User list, stats, role update, delete |
+| **Admin**        | `/admin`           | Dashboard stats, placement reports |
+| **Audit**        | `/audit`           | Audit trail logs |
 
-### 🔔 Notifications
-- In-app notification system
-- Type-based icons and colors
-- Mark read/mark all read
-- Unread count badges
+### Frontend Pages
 
-### 📋 Audit Logging
-- All admin actions recorded
-- Entity filtering
-- Old/new data comparison
+| Page               | Path                         | Roles                | Description |
+|--------------------|------------------------------|----------------------|-------------|
+| Login / Register   | `/login`                     | Public               | Email + password auth |
+| Dashboard          | `/dashboard`                 | All                  | Role-specific dashboard |
+| Profile            | `/dashboard/profile`         | Student              | Personal info, contacts, family |
+| Placement Profile  | `/dashboard/placement-profile`| Student             | Policy, PEP fee, status |
+| Browse Drives      | `/dashboard/drives`          | All                  | View/manage drives |
+| My Registrations   | `/dashboard/my-drives`       | Student              | Drive registrations |
+| Documents          | `/dashboard/documents`       | All                  | Upload/verify docs |
+| Offers             | `/dashboard/offers`          | Student, TPC         | Accept/reject offers |
+| Messages           | `/dashboard/messages`        | All                  | Chat, new conversation, broadcast |
+| Notifications      | `/dashboard/notifications`   | All                  | Notification center |
+| Students           | `/dashboard/students`        | Admin, TPC, Faculty  | Student list |
+| Users              | `/dashboard/users`           | Admin                | User management |
+| Analytics          | `/dashboard/analytics`       | Admin, TPC           | Placement reports |
+| Audit Logs         | `/dashboard/audit`           | Admin                | Activity trail |
+| Settings           | `/dashboard/settings`        | Super Admin          | System settings |
 
-## 🎨 Design System
+---
 
-The frontend features a **premium dark-mode design** with:
-- **Glassmorphism** effects with backdrop blur
-- **Gradient accents** (indigo/emerald palette)
-- **Micro-animations** on hover, entry, and interactions
-- **Responsive layout** with collapsible sidebar
-- **Inter font** for modern typography
-- Custom scrollbar styling
+## 🛠 Tech Stack
 
-## 🚀 Getting Started
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Vanilla CSS with CSS variables (dark/light theme)
+- **HTTP Client**: Axios with JWT interceptors
+- **Icons**: react-icons (Heroicons set)
+- **Font**: Inter (Google Fonts)
 
 ### Backend
+- **Framework**: FastAPI (Python)
+- **Auth**: JWT (python-jose) + bcrypt password hashing
+- **Database Client**: supabase-py
+- **Validation**: Pydantic v2
+- **Server**: Uvicorn with hot-reload
+- **Storage**: Supabase Storage (signed URLs)
 
+### Database
+- **Provider**: Supabase (PostgreSQL)
+- **Schema**: 15+ tables, ENUM types, FK constraints, indexes
+- **Auth**: Self-hosted (passwords in `users` table, bcrypt via pgcrypto)
+- **Storage**: Supabase Storage buckets
+
+### Key Libraries
+```
+# Backend (requirements.txt)
+fastapi>=0.104.0        # API framework
+uvicorn>=0.24.0         # ASGI server
+supabase>=2.0.0         # Supabase client
+python-jose[cryptography]  # JWT tokens
+bcrypt>=4.0.0           # Password hashing
+pydantic[email]>=2.0.0  # Validation
+python-multipart        # File uploads
+python-dotenv           # Environment vars
+
+# Frontend (package.json)
+next                    # React framework
+typescript              # Type safety
+axios                   # HTTP client
+react-icons             # Icon library
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Database Setup
+```sql
+-- Run in Supabase SQL Editor:
+-- 1. First run: supabase_schema.sql (creates tables)
+-- 2. Then run: insert_data.sql (seeds data + creates users with passwords)
+```
+
+### 2. Backend
 ```bash
 cd backend
 python -m venv venv
-venv\Scripts\activate          # Windows
+./venv/Scripts/activate    # Windows
 pip install -r requirements.txt
-cp .env.example .env           # Fill in Supabase credentials
+# Edit .env with your Supabase credentials
 uvicorn app.main:app --reload
+# → http://localhost:8000/docs
 ```
 
-### Frontend
-
+### 3. Frontend
 ```bash
 cd frontend
 npm install
-cp .env.local.example .env.local  # API URL already set
+# Edit .env.local → NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
 npm run dev
+# → http://localhost:3000
 ```
 
-### Database
+---
 
-Execute `supabase_schema.sql` in your Supabase SQL editor to create all tables, enums, and indexes.
+## 🔒 Security
 
-## 🗂️ API Endpoints
+- **Passwords**: bcrypt-hashed, stored in `users.password_hash`
+- **Auth**: JWT access + refresh tokens, auto-refresh on 401
+- **RBAC**: Server-side role enforcement on every endpoint
+- **Storage**: Signed URLs for document access (time-limited)
+- **API**: No `password_hash` returned in user list responses
 
-| Module        | Prefix                    | Description                      |
-|---------------|---------------------------|----------------------------------|
-| Auth          | `/api/v1/auth`            | Register, login, refresh, me     |
-| Students      | `/api/v1/students`        | CRUD, contacts, skills, prefs    |
-| Placements    | `/api/v1/placements`      | Profiles, eligibility, policy    |
-| Drives        | `/api/v1/drives`          | CRUD, rounds, registration, etc. |
-| Documents     | `/api/v1/documents`       | Upload, verify, re-upload        |
-| Messages      | `/api/v1/messages`        | Send, conversations, broadcast   |
-| Notifications | `/api/v1/notifications`   | List, mark read, unread count    |
-| Users         | `/api/v1/users`           | List, role update, delete        |
-| Admin         | `/api/v1/admin`           | Dashboard, placement report      |
-| Audit         | `/api/v1/audit`           | Audit logs                       |
+---
 
-## 🔧 Tech Stack
+## 📁 Project Structure
 
-| Layer     | Technology                        |
-|-----------|-----------------------------------|
-| Frontend  | Next.js 16, TypeScript, Vanilla CSS |
-| Backend   | FastAPI, Python 3.11+             |
-| Database  | Supabase PostgreSQL (with RLS)    |
-| Auth      | Supabase Auth + JWT               |
-| Storage   | Supabase Storage                  |
-| API       | Axios with interceptors           |
+```
+12.UMS/
+├── backend/
+│   ├── app/
+│   │   ├── admin/          # Dashboard stats, reports
+│   │   ├── audit/          # Activity logging
+│   │   ├── auth/           # Register, login, JWT
+│   │   ├── core/           # Config, DB, security, deps
+│   │   ├── documents/      # File upload, verification
+│   │   ├── drives/         # Placement drives, rounds
+│   │   ├── messaging/      # DMs, broadcast
+│   │   ├── notifications/  # In-app notifications
+│   │   ├── placements/     # Profiles, eligibility
+│   │   ├── students/       # Student CRUD + sub-resources
+│   │   ├── users/          # User management
+│   │   └── main.py         # FastAPI app entry point
+│   ├── .env                # Environment variables
+│   └── requirements.txt    # Python dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── dashboard/  # All dashboard sub-pages
+│   │   │   ├── login/      # Login/register page
+│   │   │   ├── globals.css # Design system
+│   │   │   ├── layout.tsx  # Root layout
+│   │   │   └── page.tsx    # Root redirect
+│   │   ├── components/     # Sidebar
+│   │   ├── context/        # AuthContext (JWT + user state)
+│   │   └── lib/            # API client (axios)
+│   └── .env.local          # Frontend env
+├── supabase_schema.sql     # Database DDL
+├── insert_data.sql         # Seed data (users + students + drives)
+└── README.md               # This file
+```
 
-## 📜 License
+---
 
-Built for educational purposes as part of the University Management System training project.
+## 📊 Seeded Data Summary
+
+| Data               | Count |
+|--------------------|-------|
+| Users (with login) | 12    |
+| Students           | 8     |
+| Placement Drives   | 14    |
+| Drive Rounds       | 23    |
+| Registrations      | 33    |
+| Skills             | 22    |
+| Preferences        | 7     |
+| Duty Leaves        | 5     |
+| Independent Offers | 4     |
+| Notifications      | 10    |
+| Messages           | 10    |
+| Audit Logs         | 9     |
+
+---
+
+## 📧 Email/SMTP
+
+SMTP is configured in `.env` (Gmail) but currently only used for future password reset flows. All current notifications are **in-app** (stored in the `notifications` table). To test email:
+- The backend has `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `EMAIL_SERVER`, `EMAIL_PORT` in `.env`
+- Not wired to any endpoint yet — can be extended for drive reminders, offer alerts, etc.
+
+---
+
+*Built with ❤️ for Lovely Professional University*

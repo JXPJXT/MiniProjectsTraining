@@ -12,7 +12,7 @@ router = APIRouter(prefix="/admin", tags=["Admin Panel"])
 
 @router.get("/dashboard")
 async def dashboard(
-    current_user: CurrentUser = Depends(require_roles(["admin", "super_admin"])),
+    current_user: CurrentUser = Depends(require_roles(["admin", "super_admin", "tpc"])),
 ):
     """Get admin dashboard stats."""
     db = get_supabase_admin()

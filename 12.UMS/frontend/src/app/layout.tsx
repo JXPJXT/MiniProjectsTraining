@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/context/AuthContext';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Placement Portal | University Management System",
-  description: "Enterprise-grade cloud-native placement management system for universities. Manage drives, students, documents, and placements with role-based access control.",
+  title: 'LPU Placement Portal',
+  description: 'Lovely Professional University — Campus Placement Management System',
+  keywords: 'LPU, placement, portal, campus, recruitment',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <body className={inter.className}>
         <AuthProvider>
           {children}
         </AuthProvider>
