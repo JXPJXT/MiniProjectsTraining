@@ -1,70 +1,55 @@
 "use client";
 
-import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 
-interface StepperProps {
+interface Props {
     steps: string[];
     current: number;
-    onStepClick: (i: number) => void;
-    maxReached: number;
 }
 
-export default function Stepper({ steps, current, onStepClick, maxReached }: StepperProps) {
+export default function Stepper({ steps, current }: Props) {
     return (
-        <div className="flex items-center justify-center gap-0">
+        <div className="flex items-center justify-center gap-0 max-w-2xl mx-auto">
             {steps.map((label, i) => {
                 const isDone = i < current;
                 const isActive = i === current;
-                const isClickable = i <= maxReached;
 
                 return (
-                    <div key={label} className="flex items-center">
-                        {/* Step circle + label */}
-                        <button
-                            onClick={() => isClickable && onStepClick(i)}
-                            disabled={!isClickable}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300",
-                                isActive && "bg-indigo-500/15 border border-indigo-500/40",
-                                isDone && "bg-emerald-500/10 border border-emerald-500/30",
-                                !isActive && !isDone && "border border-transparent",
-                                isClickable ? "cursor-pointer hover:bg-white/5" : "cursor-default opacity-50"
-                            )}
-                        >
+                    <div key={label} className="flex items-center flex-1 last:flex-none">
+                        {/* Step indicator */}
+                        <div className="flex flex-col items-center gap-1.5">
                             <div
                                 className={cn(
-                                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all",
-                                    isActive && "bg-indigo-500 text-white shadow-lg shadow-indigo-500/30",
-                                    isDone && "bg-emerald-500 text-white",
-                                    !isActive && !isDone && "bg-slate-700/60 text-slate-400"
+                                    "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold transition-all duration-300 border",
+                                    isDone && "bg-white text-black border-white",
+                                    isActive && "bg-white/10 text-white border-white/30",
+                                    !isDone && !isActive && "bg-transparent text-white/20 border-white/[0.08]"
                                 )}
                             >
-                                {isDone ? <Check className="w-4 h-4" /> : i + 1}
+                                {isDone ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> : i + 1}
                             </div>
                             <span
                                 className={cn(
-                                    "text-sm font-medium hidden sm:inline",
-                                    isActive && "text-indigo-300",
-                                    isDone && "text-emerald-400",
-                                    !isActive && !isDone && "text-slate-500"
+                                    "text-[10px] font-medium tracking-wide uppercase transition-colors whitespace-nowrap",
+                                    isDone && "text-white/60",
+                                    isActive && "text-white/90",
+                                    !isDone && !isActive && "text-white/20"
                                 )}
                             >
                                 {label}
                             </span>
-                        </button>
+                        </div>
 
                         {/* Connector line */}
                         {i < steps.length - 1 && (
-                            <div className="w-8 md:w-16 h-px mx-1">
-                                <div
-                                    className={cn(
-                                        "h-full rounded-full transition-all duration-500",
-                                        i < current
-                                            ? "bg-gradient-to-r from-emerald-500 to-indigo-500"
-                                            : "bg-slate-700/40"
-                                    )}
-                                />
+                            <div className="flex-1 mx-3 mt-[-14px]">
+                                <div className="h-px bg-white/[0.06] relative">
+                                    <div
+                                        className="absolute top-0 left-0 h-full bg-white/30 transition-all duration-500"
+                                        style={{ width: isDone ? "100%" : "0%" }}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>

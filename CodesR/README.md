@@ -1,58 +1,127 @@
-# CodesR Collection
+# 🧩 CodesR — Mini-Projects & Algorithms Collection
 
-A curated collection of Python scripts and algorithms focusing on data structures, graph theory, and interactive visualizations.
+> A curated collection of **data structures, algorithms, visualizations, and mini-tools** — spanning Python, Java, and web technologies.
+
+![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python)
+![Java](https://img.shields.io/badge/Java-17+-red?logo=openjdk)
+![HTML5](https://img.shields.io/badge/HTML5-Canvas-E34F26?logo=html5)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi)
+
+---
 
 ## 📂 Contents
 
-| File | Description | Technologies |
-|------|-------------|--------------|
-| `graph.py` | **Avengers Compatibility Graph**<br>Interactive visualization of a weighted graph showing combat synergy between Avengers. Features circular layout, dynamic edge coloring, and interactive highlighting. | `networkx`, `matplotlib` |
-| `got.py` | **Royal Lineage CLI**<br>A CLI tool to explore the Game of Thrones Targaryen family tree. Supports querying parents, children, ancestors, and descendants. | Python (Tree DS) |
-| `b.py` | **Decision Tree Visualizer**<br>Interactive decision tree that guesses a number (0-10) and visualizes the traversal path in real-time. | `networkx`, `matplotlib` |
-| `hp.py` | **Custom Hash Map**<br>A pure Python implementation of a Hash Map using chaining for collision resolution. | Python (Data Structures) |
-| `a.py` | **Math Agent Experiment**<br>A prototype AI agent that solves math problems by parsing natural language and calling Python functions. | `ollama` |
-| `bst.java` | **Binary Search Tree**<br>Java implementation of a Binary Search Tree. | Java |
-| `ticket-ai-system/` | **AI Ticket Routing System**<br>A structured FastAPI project for intelligent support ticket routing and classification. | FastAPI, SQLAlchemy |
+### 🐍 Python Scripts
+
+| File | Project | Description | Tech |
+|---|---|---|---|
+| `graph.py` | **🦸 Avengers Compatibility Graph** | Interactive weighted directed graph showing combat synergy between 6 Avengers. Circular layout, dynamic edge coloring, and node highlighting. Iron Man "self-centered" mode. | `networkx`, `matplotlib` |
+| `got.py` | **🐉 Royal Lineage CLI** | CLI tool to explore the Game of Thrones Targaryen family tree. Query parents, children, ancestors, and descendants. | Python (Tree DS) |
+| `got_visualizer.py` | **🐉 Royal Lineage Visualizer** | Enhanced version with 1000+ lines: ANSI-colored terminal trees, statistics, and an **interactive HTML visualization** that opens in the browser with a full drag-and-drop D3.js family tree. | Python, HTML/JS |
+| `b.py` | **🌳 Decision Tree Visualizer** | Interactive decision tree that guesses a number (0–10) and visualizes the traversal path in real-time with highlighted nodes. | `networkx`, `matplotlib` |
+| `a.py` | **🤖 Math Agent Experiment** | Prototype AI agent using Ollama to solve math problems by parsing natural language and calling Python functions (ReAct pattern). | `ollama` |
+| `a (2).py` | **🌲 BST Visualizer** | Quick script to draw a binary search tree graph using NetworkX with custom node positioning. | `networkx`, `matplotlib` |
+| `hp.py` | **🗂️ Custom Hash Map** | Pure Python Hash Map implementation with chaining for collision resolution. | Python |
+| `queue.py` | **🎫 Ticket Management System** | Circular queue-based ticket management system with CLI interface. Add, delete, peek, traverse, and count tickets. | Python |
+| `app.py` | **⚡ Flask + Uvicorn Demo** | Flask app served via ASGI (Uvicorn) using `asgiref`. Demonstrates Flask ↔ ASGI bridging. | Flask, Uvicorn |
+
+### ☕ Java Programs
+
+| File | Project | Description |
+|---|---|---|
+| `bst.java` | **🌲 Binary Search Tree** | Java implementation of BST with insert, search, and traversal operations. |
+
+### 📁 `dp/` — Dynamic Programming
+
+| File | Problem | Description |
+|---|---|---|
+| `ClimbStairs.java` | **🧗 Climbing Stairs** | Three approaches: Recursion, Memoization, and Tabulation for the classic staircase problem. |
+| `fib.java` | **🔢 Fibonacci** | Fibonacci number calculation using Memoization and Tabulation. |
+
+### 🌐 Web Visualizations
+
+| File | Description |
+|---|---|
+| `a.html` | **🌧️ Rain Water Trapping Visualizer** — Interactive Canvas-based step-through visualizer for the two-pointer rain water trapping algorithm. Features play/pause animation, speed control, and pointer tracking stats. |
+| `targaryen_lineage.html` | **🐉 Targaryen Family Tree** — Generated HTML visualization of the Targaryen lineage (output from `got_visualizer.py`). |
+
+### 📁 `ticket-ai-system/` — AI Ticket Router
+
+A structured **FastAPI** project scaffold for intelligent support ticket routing and classification.
+
+```
+ticket-ai-system/
+├── app/
+│   ├── main.py          # FastAPI entry point
+│   ├── models/          # Data models
+│   ├── routes/          # API routes
+│   └── services/        # Business logic
+├── tests/               # Test suite
+└── requirements.txt     # Dependencies
+```
+
+**Tech:** FastAPI, SQLAlchemy
+
+---
 
 ## 🚀 How to Run
 
 ### Python Scripts
-Ensure you have the required dependencies:
-```bash
-pip install networkx matplotlib ollama
-```
 
-Run any script directly:
 ```bash
+# Install common dependencies
+pip install networkx matplotlib ollama
+
 # Run Avengers Graph
 python graph.py
 
-# Run GOT Lineage Tool
+# Run GOT Lineage (CLI)
 python got.py
 
-# Run Decision Tree Visualizer
+# Run GOT Visualizer (opens browser)
+python got_visualizer.py
+
+# Run Decision Tree
 python b.py
+
+# Run Ticket Management Queue
+python queue.py
+
+# Run Flask + Uvicorn demo
+pip install flask asgiref uvicorn
+python app.py
 ```
 
-### Java
+### Java Programs
+
 ```bash
-javac bst.java
-java bst
+# Compile and run BST
+javac bst.java && java bst
+
+# Compile and run DP problems
+cd dp
+javac ClimbStairs.java && java ClimbStairs
+javac fib.java && java fib
 ```
 
-## 📸 Previews
+### Web Visualizations
 
-### Avengers Compatibility Graph (`graph.py`)
-- Visualizes relationships with weighted edges.
-- Click on nodes to highlight connections.
-- Special "Self-Centered" mode for Iron Man.
+```bash
+# Open directly in browser
+start a.html                    # Rain Water Trapping
+start targaryen_lineage.html    # Targaryen Family Tree
+```
 
-### Decision Tree (`b.py`)
-- Visualizes the logic path taken to guess a number.
-- Highlights the active path in red/yellow.
+---
 
 ## 🧩 Dependencies
-- Python 3.8+
-- `matplotlib`
-- `networkx`
-- `ollama` (for `a.py`)
+
+| Language | Packages |
+|---|---|
+| **Python** | `matplotlib`, `networkx`, `ollama`, `flask`, `asgiref`, `uvicorn` |
+| **Java** | JDK 17+ |
+| **Web** | Modern browser (Chrome/Edge/Firefox) |
+
+---
+
+*A growing collection of algorithms, data structures, and creative experiments* 🧩

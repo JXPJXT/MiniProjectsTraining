@@ -63,6 +63,77 @@ def _safe(v):
     return v
 
 
+def _load_primary_df(meta: dict) -> pd.DataFrame:
+    """Load the primary CSV — works for both single‑file and train/test datasets."""
+    files = meta["files"]
+    primary = files.get("data") or files.get("train")
+    return pd.read_csv(_resolve(primary))
+
+
+# High-cardinality threshold: if a column has more unique values than this,
+# we drop it rather than one-hot-encode (prevents memory explosions).
+HIGH_CARDINALITY_THRESHOLD = 50
+
+
+def _clean_df(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+    """
+    Generic cleaning applied before any task:
+    - Drop ID-like columns
+    - Drop high-cardinality text columns (prevents OHE memory blowup)
+    Returns cleaned df and list of preprocessing step descriptions.
+    """
+    steps = []
+
+    # Drop ID columns
+    id_patterns = ("id", "cust_id", "index", "unnamed")
+    id_cols = [c for c in df.columns if c.lower().strip() in id_patterns
+               or c.lower().startswith("unnamed")]
+    if id_cols:
+        df = df.drop(columns=id_cols, errors="ignore")
+        steps.append(f"Dropped ID/index columns: {', '.join(id_cols)}")
+
+    # Drop high-cardinality text columns that would explode OHE
+    cat_cols = df.select_dtypes(include="object").columns.tolist()
+    high_card = [c for c in cat_cols if df[c].nunique() > HIGH_CARDINALITY_THRESHOLD]
+    if high_card:
+        df = df.drop(columns=high_card, errors="ignore")
+        steps.append(f"Dropped high‑cardinality text columns (>{HIGH_CARDINALITY_THRESHOLD} unique values): {', '.join(high_card)}")
+
+    return df, steps
+
+
+def _build_preprocessor(df: pd.DataFrame, exclude_cols: list[str] | None = None):
+    """
+    Build a ColumnTransformer for the given DataFrame.
+    Returns (preprocessor, num_cols, cat_cols, step_descriptions).
+    """
+    exclude = set(exclude_cols or [])
+    num_cols = [c for c in df.select_dtypes(include="number").columns if c not in exclude]
+    cat_cols = [c for c in df.select_dtypes(include="object").columns if c not in exclude]
+
+    steps_desc = []
+    transformers = []
+
+    if num_cols:
+        transformers.append(("num", Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+        ]), num_cols))
+        steps_desc.append(f"Imputed missing numeric values with median ({len(num_cols)} columns)")
+        steps_desc.append("Scaled numeric features using StandardScaler")
+
+    if cat_cols:
+        transformers.append(("cat", Pipeline([
+            ("imputer", SimpleImputer(strategy="most_frequent")),
+            ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False, max_categories=30)),
+        ]), cat_cols))
+        steps_desc.append(f"Imputed missing categorical values with most frequent ({len(cat_cols)} columns)")
+        steps_desc.append("One‑hot encoded categorical features (max 30 categories each)")
+
+    preprocessor = ColumnTransformer(transformers, remainder="drop")
+    return preprocessor, num_cols, cat_cols, steps_desc
+
+
 MODEL_REGISTRY = {
     # Classification
     "logistic_regression": ("Logistic Regression", lambda: LogisticRegression(max_iter=1000, random_state=42)),
@@ -287,63 +358,50 @@ def train_model(req: TrainRequest):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  CLASSIFICATION PIPELINE
+#  CLASSIFICATION PIPELINE  (works on ANY dataset)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _train_classification(req: TrainRequest, meta: dict):
-    train_df = pd.read_csv(_resolve(meta["files"]["train"]))
-    target_col = meta["target"]
+    df = _load_primary_df(meta)
+    df, clean_steps = _clean_df(df)
+    preprocessing_steps = list(clean_steps)
 
-    # Drop ID columns
-    id_cols = [c for c in train_df.columns if c.lower() in ("id", "cust_id")]
-    train_df = train_df.drop(columns=id_cols, errors="ignore")
+    target_col = meta.get("target")
 
-    if target_col not in train_df.columns:
-        raise HTTPException(400, f"Target column '{target_col}' not found")
+    # --- Determine target column ---
+    if target_col and target_col in df.columns:
+        pass  # use the configured target
+    else:
+        # No target configured — pick the last column
+        target_col = df.columns[-1]
+        preprocessing_steps.append(f"No labelled target configured → using last column '{target_col}'")
 
-    # --- For backpack: bin the price into classes ---
-    y_raw = train_df[target_col]
-    if req.dataset == "backpack":
-        # Create price bins for classification
-        bins = pd.qcut(y_raw, q=4, labels=["Budget", "Economy", "Mid-Range", "Premium"], duplicates="drop")
-        y = bins.astype(str)
-    elif y_raw.dtype == "object" or y_raw.nunique() < 20:
+    # --- Convert target to classes ---
+    y_raw = df[target_col]
+    if y_raw.dtype == "object" or y_raw.nunique() < 15:
         y = y_raw.astype(str)
     else:
-        bins = pd.qcut(y_raw, q=4, labels=["Low", "Medium", "High", "Very High"], duplicates="drop")
+        # Numeric target → bin into classes
+        bins = pd.qcut(y_raw, q=4, labels=["Low", "Mid-Low", "Mid-High", "High"], duplicates="drop")
         y = bins.astype(str)
+        preprocessing_steps.append(f"Binned numeric target '{target_col}' into 4 classes for classification")
 
-    X = train_df.drop(columns=[target_col])
+    X = df.drop(columns=[target_col])
 
     # Encode target
     le = LabelEncoder()
     y_encoded = le.fit_transform(y)
 
-    # Separate numeric / categorical
-    num_cols = X.select_dtypes(include="number").columns.tolist()
-    cat_cols = X.select_dtypes(include="object").columns.tolist()
+    # Build preprocessor
+    preprocessor, num_cols, cat_cols, prep_steps = _build_preprocessor(X)
+    preprocessing_steps.extend(prep_steps)
 
-    preprocessing_steps = []
-
-    # Build preprocessing
-    transformers = []
-    if num_cols:
-        transformers.append(("num", Pipeline([
-            ("imputer", SimpleImputer(strategy="median")),
-            ("scaler", StandardScaler()),
-        ]), num_cols))
-        preprocessing_steps.append("Imputed missing numeric values with median")
-        preprocessing_steps.append("Scaled numeric features using StandardScaler")
-
-    if cat_cols:
-        transformers.append(("cat", Pipeline([
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
-        ]), cat_cols))
-        preprocessing_steps.append("Imputed missing categorical values with most frequent value")
-        preprocessing_steps.append("One‑hot encoded categorical features")
-
-    preprocessor = ColumnTransformer(transformers, remainder="drop")
+    # Limit dataset size for SVM (too slow on large datasets)
+    max_rows = 10_000 if "svm" in req.model else 50_000
+    if len(X) > max_rows:
+        X = X.sample(n=max_rows, random_state=42)
+        y_encoded = y_encoded[X.index]
+        preprocessing_steps.append(f"Sampled {max_rows} rows for training efficiency")
 
     # Train / test split
     X_train, X_test, y_train, y_test = train_test_split(
@@ -416,49 +474,48 @@ def _train_classification(req: TrainRequest, meta: dict):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  REGRESSION PIPELINE
+#  REGRESSION PIPELINE  (works on ANY dataset)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _train_regression(req: TrainRequest, meta: dict):
-    train_df = pd.read_csv(_resolve(meta["files"]["train"]))
-    target_col = meta["target"]
+    df = _load_primary_df(meta)
+    df, clean_steps = _clean_df(df)
+    preprocessing_steps = list(clean_steps)
 
-    id_cols = [c for c in train_df.columns if c.lower() in ("id", "cust_id")]
-    train_df = train_df.drop(columns=id_cols, errors="ignore")
+    target_col = meta.get("target")
 
-    # Drop non‑predictive text columns for London dataset
-    drop_text = ["fullAddress", "postcode", "street"]
-    train_df = train_df.drop(columns=[c for c in drop_text if c in train_df.columns], errors="ignore")
+    if target_col and target_col in df.columns:
+        pass
+    else:
+        # Pick first numeric column with enough variation as default target
+        num_candidates = df.select_dtypes(include="number").columns.tolist()
+        if not num_candidates:
+            raise HTTPException(400, "No numeric columns found for regression")
+        target_col = num_candidates[-1]
+        preprocessing_steps.append(f"No labelled target configured → using '{target_col}' as target")
 
-    if target_col not in train_df.columns:
-        raise HTTPException(400, f"Target column '{target_col}' not found")
+    y = df[target_col].copy()
+    X = df.drop(columns=[target_col])
 
-    y = train_df[target_col].copy()
-    X = train_df.drop(columns=[target_col])
+    # If target is categorical, we can't do regression
+    if y.dtype == "object":
+        raise HTTPException(400, f"Target column '{target_col}' is categorical — try classification instead")
 
-    num_cols = X.select_dtypes(include="number").columns.tolist()
-    cat_cols = X.select_dtypes(include="object").columns.tolist()
+    # Drop NaN in target
+    mask = y.notna()
+    X = X[mask]
+    y = y[mask]
 
-    preprocessing_steps = []
+    preprocessor, num_cols, cat_cols, prep_steps = _build_preprocessor(X)
+    preprocessing_steps.extend(prep_steps)
 
-    transformers = []
-    if num_cols:
-        transformers.append(("num", Pipeline([
-            ("imputer", SimpleImputer(strategy="median")),
-            ("scaler", StandardScaler()),
-        ]), num_cols))
-        preprocessing_steps.append("Imputed missing numeric values with median")
-        preprocessing_steps.append("Scaled numeric features using StandardScaler")
-
-    if cat_cols:
-        transformers.append(("cat", Pipeline([
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
-        ]), cat_cols))
-        preprocessing_steps.append("Imputed missing categorical values with most frequent")
-        preprocessing_steps.append("One‑hot encoded categorical features")
-
-    preprocessor = ColumnTransformer(transformers, remainder="drop")
+    # Limit for SVR
+    max_rows = 10_000 if req.model == "svr" else 50_000
+    if len(X) > max_rows:
+        sample = X.sample(n=max_rows, random_state=42)
+        X = sample
+        y = y.loc[sample.index]
+        preprocessing_steps.append(f"Sampled {max_rows} rows for training efficiency")
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     preprocessing_steps.append("Split data 80% train / 20% test")
@@ -505,42 +562,49 @@ def _train_regression(req: TrainRequest, meta: dict):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  CLUSTERING PIPELINE  (Credit Card dataset)
+#  CLUSTERING PIPELINE  (works on ANY dataset)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _train_clustering(req: TrainRequest, meta: dict):
-    df = pd.read_csv(_resolve(meta["files"]["data"]))
+    df = _load_primary_df(meta)
+    df, clean_steps = _clean_df(df)
+    preprocessing_steps = list(clean_steps)
 
-    preprocessing_steps = []
+    # If there's a configured target, drop it (clustering is unsupervised)
+    target_col = meta.get("target")
+    if target_col and target_col in df.columns:
+        df = df.drop(columns=[target_col])
+        preprocessing_steps.append(f"Dropped target column '{target_col}' (clustering is unsupervised)")
 
-    # Drop CUST_ID
-    if "CUST_ID" in df.columns:
-        df = df.drop(columns=["CUST_ID"])
-        preprocessing_steps.append("Dropped CUST_ID column (non‑predictive identifier)")
+    # Keep only numeric columns for clustering
+    num_df = df.select_dtypes(include="number")
+    dropped_cat = set(df.columns) - set(num_df.columns)
+    if dropped_cat:
+        preprocessing_steps.append(f"Kept only numeric columns ({len(num_df.columns)} of {len(df.columns)})")
+    df = num_df
 
-    # Handle missing values per spec
-    if "CREDIT_LIMIT" in df.columns:
-        before = len(df)
-        df = df.dropna(subset=["CREDIT_LIMIT"])
-        after = len(df)
-        if before != after:
-            preprocessing_steps.append(f"Dropped {before - after} rows where CREDIT_LIMIT was null")
+    if df.shape[1] < 2:
+        raise HTTPException(400, "Need at least 2 numeric features for clustering")
 
-    if "MINIMUM_PAYMENTS" in df.columns:
-        med = df["MINIMUM_PAYMENTS"].median()
-        df["MINIMUM_PAYMENTS"] = df["MINIMUM_PAYMENTS"].fillna(med)
-        preprocessing_steps.append(f"Filled MINIMUM_PAYMENTS nulls with median ({med:.2f})")
-
-    # Fill remaining nulls
+    # Fill missing
+    missing_before = df.isnull().sum().sum()
     df = df.fillna(df.median(numeric_only=True))
+    if missing_before > 0:
+        preprocessing_steps.append(f"Filled {missing_before} missing values with column medians")
 
     # Log transform skewed columns
     skewed = df.skew().abs()
     skewed_cols = skewed[skewed > 1].index.tolist()
     for col in skewed_cols:
-        df[col] = np.log1p(df[col])
+        df[col] = np.log1p(df[col].clip(lower=0))
     if skewed_cols:
-        preprocessing_steps.append(f"Applied log(1+x) transform to skewed columns: {', '.join(skewed_cols)}")
+        preprocessing_steps.append(f"Applied log(1+x) transform to {len(skewed_cols)} skewed columns")
+
+    # Sample if too large (clustering on 40K+ rows is very slow)
+    max_rows = 8000
+    if len(df) > max_rows:
+        df = df.sample(n=max_rows, random_state=42).reset_index(drop=True)
+        preprocessing_steps.append(f"Sampled {max_rows} rows for clustering efficiency")
 
     # Scale
     scaler = StandardScaler()
@@ -548,13 +612,19 @@ def _train_clustering(req: TrainRequest, meta: dict):
     preprocessing_steps.append("Standardised all features with StandardScaler")
 
     # PCA retaining 95% variance
-    pca = PCA(n_components=0.95, random_state=42)
-    X_pca = pca.fit_transform(X_scaled)
-    n_components = X_pca.shape[1]
-    variance_explained = round(sum(pca.explained_variance_ratio_) * 100, 1)
-    preprocessing_steps.append(
-        f"Applied PCA → kept {n_components} components explaining {variance_explained}% variance"
-    )
+    n_features = X_scaled.shape[1]
+    if n_features > 3:
+        pca = PCA(n_components=0.95, random_state=42)
+        X_pca = pca.fit_transform(X_scaled)
+        n_components = X_pca.shape[1]
+        variance_explained = round(sum(pca.explained_variance_ratio_) * 100, 1)
+        preprocessing_steps.append(
+            f"Applied PCA → kept {n_components} components explaining {variance_explained}% variance"
+        )
+    else:
+        X_pca = X_scaled
+        n_components = n_features
+        variance_explained = 100.0
 
     model_key = req.model
 

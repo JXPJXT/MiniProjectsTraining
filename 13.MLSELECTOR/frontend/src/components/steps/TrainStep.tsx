@@ -1,283 +1,230 @@
 "use client";
 
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getRecommendation, getModels, trainModel, type TrainResult, type ModelOption } from "@/lib/api";
-import { useState, useEffect } from "react";
 import {
-    Loader2, AlertCircle, Zap, Settings, ArrowRight, Brain,
-    ChevronDown, Info, Layers,
+    getRecommendation, getModels, trainModel,
+    type TrainResult, type ModelOption,
+} from "@/lib/api";
+import { useState, useEffect, useRef } from "react";
+import {
+    Loader2, AlertCircle, Play, ChevronDown,
+    Sparkles, Settings2, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
     slug: string;
-    onTrainDone: (r: TrainResult) => void;
+    onResults: (r: TrainResult) => void;
 }
 
-export default function TrainStep({ slug, onTrainDone }: Props) {
-    const [task, setTask] = useState<string>("");
-    const [model, setModel] = useState<string>("");
-    const [nClusters, setNClusters] = useState<number>(0);
-    const [progress, setProgress] = useState(0);
-    const [statusMsg, setStatusMsg] = useState("");
-
-    // Fetch recommendation
-    const recQuery = useQuery({
+export default function TrainStep({ slug, onResults }: Props) {
+    const { data: rec, isLoading: recLoading } = useQuery({
         queryKey: ["recommend", slug],
         queryFn: () => getRecommendation(slug),
     });
 
-    // Fetch models
-    const modelsQuery = useQuery({
+    const { data: models, isLoading: modelsLoading } = useQuery({
         queryKey: ["models"],
         queryFn: getModels,
     });
 
-    // Set defaults when recommendation loads
-    useEffect(() => {
-        if (recQuery.data && !task) {
-            setTask(recQuery.data.recommended_task);
-        }
-    }, [recQuery.data, task]);
+    const [task, setTask] = useState("");
+    const [model, setModel] = useState("");
+    const [nClusters, setNClusters] = useState(4);
+    const [progress, setProgress] = useState(0);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
-        if (modelsQuery.data && task && !model) {
-            const list = modelsQuery.data[task] || [];
-            if (list.length > 0) setModel(list[0].id);
+        if (rec && !task) {
+            setTask(rec.recommended_task);
         }
-    }, [modelsQuery.data, task, model]);
+    }, [rec, task]);
 
-    // Training mutation
-    const trainMut = useMutation({
-        mutationFn: () => {
-            setProgress(0);
-            setStatusMsg("Sending request to backend…");
+    useEffect(() => {
+        if (models && task) {
+            const available = models[task] as ModelOption[] | undefined;
+            if (available && available.length > 0) {
+                setModel(available[0].id);
+            }
+        }
+    }, [models, task]);
 
-            // Simulated progress
-            const interval = setInterval(() => {
-                setProgress((p) => {
-                    if (p >= 90) {
-                        clearInterval(interval);
-                        return 90;
-                    }
-                    const messages = [
-                        "Preprocessing data…",
-                        "Encoding features…",
-                        "Fitting model…",
-                        "Computing metrics…",
-                        "Generating explanations…",
-                    ];
-                    const idx = Math.min(Math.floor(p / 20), messages.length - 1);
-                    setStatusMsg(messages[idx]);
-                    return p + Math.random() * 8;
-                });
-            }, 400);
-
-            return trainModel({
-                dataset: slug,
-                task,
-                model,
-                n_clusters: task === "clustering" ? nClusters || undefined : undefined,
-            }).finally(() => {
-                clearInterval(interval);
-                setProgress(100);
-                setStatusMsg("Training complete!");
-            });
-        },
+    const mutation = useMutation({
+        mutationFn: trainModel,
         onSuccess: (data) => {
-            setTimeout(() => onTrainDone(data), 600);
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            setProgress(100);
+            setTimeout(() => onResults(data), 400);
+        },
+        onError: () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            setProgress(0);
         },
     });
 
-    const isLoading = recQuery.isLoading || modelsQuery.isLoading;
-    const isTraining = trainMut.isPending;
+    const handleTrain = () => {
+        setProgress(5);
+        intervalRef.current = setInterval(() => {
+            setProgress((p) => Math.min(p + Math.random() * 8, 92));
+        }, 300);
+        mutation.mutate({ dataset: slug, task, model, n_clusters: task === "clustering" ? nClusters : undefined });
+    };
 
-    if (isLoading)
+    if (recLoading || modelsLoading)
         return (
-            <div className="flex items-center justify-center py-32">
-                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-                <span className="ml-3 text-slate-400">Loading recommendations…</span>
+            <div className="flex flex-col items-center justify-center py-32 gap-3">
+                <Loader2 className="w-8 h-8 text-white/30 animate-spin" />
+                <p className="text-white/30 text-sm">Analyzing dataset for recommendations…</p>
             </div>
         );
 
-    const rec = recQuery.data;
-    const models = modelsQuery.data;
-    const availableModels: ModelOption[] = models?.[task] || [];
+    const availableModels = models?.[task] as ModelOption[] | undefined;
 
     return (
-        <div className="animate-fade-in-up space-y-8">
-            {/* Header */}
+        <div className="animate-fade-in-up space-y-8 max-w-2xl mx-auto">
+            {/* Title */}
             <div>
-                <h2 className="text-2xl font-bold mb-1">
-                    Recommend &{" "}
-                    <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                        Train
-                    </span>
-                </h2>
-                <p className="text-slate-400 text-sm">
-                    We&apos;ve analysed the data and have a recommendation. You can override any choice below.
-                </p>
+                <h2 className="text-2xl font-bold tracking-tight mb-1">Configure & Train</h2>
+                <p className="text-white/30 text-sm">Choose your task, pick a model, and hit train.</p>
             </div>
 
-            {/* ─── Recommendation Card ──────────────────────────────────── */}
+            {/* Recommendation */}
             {rec && (
-                <div className="glass-card p-6 border-l-4 border-l-emerald-500">
-                    <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                            <Brain className="w-6 h-6" />
-                        </div>
+                <div className="glass-card p-5 border-l-2 border-l-white/20">
+                    <div className="flex items-start gap-2.5">
+                        <Sparkles className="w-4 h-4 text-white/40 mt-0.5 flex-shrink-0" />
                         <div>
-                            <h3 className="font-semibold text-white mb-1">
-                                Recommended task:{" "}
-                                <span className="text-emerald-400 capitalize">{rec.recommended_task}</span>
-                            </h3>
-                            <p className="text-sm text-slate-400 leading-relaxed">{rec.reason}</p>
+                            <p className="text-xs text-white/50 mb-1">
+                                <span className="text-white/70 font-medium">Recommended:</span>{" "}
+                                <span className="capitalize">{rec.recommended_task}</span>
+                            </p>
+                            <p className="text-xs text-white/25 leading-relaxed">{rec.reason}</p>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* ─── Config Panel ─────────────────────────────────────────── */}
-            <div className="glass-card p-6">
-                <h3 className="text-lg font-semibold flex items-center gap-2 mb-6">
-                    <Settings className="w-5 h-5 text-indigo-400" />
-                    Training Configuration
-                </h3>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                    {/* Task selector */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-2">
-                            ML Task
-                        </label>
-                        <div className="relative">
-                            <select
-                                value={task}
-                                onChange={(e) => {
-                                    setTask(e.target.value);
-                                    setModel("");
-                                }}
-                                disabled={isTraining}
-                                className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white appearance-none cursor-pointer focus:border-indigo-500/50 focus:outline-none transition disabled:opacity-50"
-                            >
-                                <option value="classification">Classification</option>
-                                <option value="regression">Regression</option>
-                                <option value="clustering">Clustering</option>
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        </div>
-                        {task !== rec?.recommended_task && (
-                            <p className="text-xs text-amber-400 mt-1 flex items-center gap-1">
-                                <Info className="w-3 h-3" /> You&apos;ve overridden the recommendation
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Model selector */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-2">
-                            Model
-                        </label>
-                        <div className="relative">
-                            <select
-                                value={model}
-                                onChange={(e) => setModel(e.target.value)}
-                                disabled={isTraining}
-                                className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white appearance-none cursor-pointer focus:border-indigo-500/50 focus:outline-none transition disabled:opacity-50"
-                            >
-                                {availableModels.map((m) => (
-                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        </div>
-                    </div>
-
-                    {/* n_clusters for clustering */}
-                    {task === "clustering" && (
-                        <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-2">
-                                Number of Clusters (0 = auto)
-                            </label>
-                            <input
-                                type="number"
-                                min={0}
-                                max={15}
-                                value={nClusters}
-                                onChange={(e) => setNClusters(Number(e.target.value))}
-                                disabled={isTraining}
-                                className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-indigo-500/50 focus:outline-none transition disabled:opacity-50"
-                            />
-                            <p className="text-xs text-slate-500 mt-1">
-                                Leave at 0 to let the system pick the optimal cluster count.
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* ─── Preprocessing preview ──────────────────────────────── */}
-                <div className="mt-8 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                    <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2 mb-3">
-                        <Layers className="w-4 h-4 text-violet-400" />
-                        What will happen during preprocessing
-                    </h4>
-                    <ul className="space-y-1.5">
-                        {[
-                            "Handle missing values (median for numbers, most‑frequent for categories)",
-                            task === "clustering" ? "Apply log transform to skewed features" : null,
-                            task === "clustering" ? "Apply PCA (retaining 95% variance)" : null,
-                            task !== "clustering" ? "One‑hot encode categorical features" : null,
-                            "Standardize / scale numeric features",
-                            task !== "clustering" ? "Split data 80% train / 20% test" : null,
-                        ]
-                            .filter(Boolean)
-                            .map((step, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-slate-400">
-                                    <span className="text-indigo-400 mt-0.5">•</span>
-                                    {step}
-                                </li>
-                            ))}
-                    </ul>
-                </div>
-
-                {/* ─── Train Button ───────────────────────────────────────── */}
-                <div className="mt-8">
-                    {trainMut.isError && (
-                        <div className="mb-4 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                            {(trainMut.error as Error).message}
-                        </div>
-                    )}
-
-                    {!isTraining ? (
+            {/* Task Selector */}
+            <div className="space-y-2">
+                <label className="text-[10px] text-white/25 uppercase tracking-wider font-medium flex items-center gap-1.5">
+                    <Settings2 className="w-3 h-3" />
+                    Task
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                    {["classification", "regression", "clustering"].map((t) => (
                         <button
-                            onClick={() => trainMut.mutate()}
-                            disabled={!model || !task}
-                            className="flex items-center gap-3 px-10 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-600 text-white font-bold text-lg hover:shadow-lg hover:shadow-emerald-500/25 transition-all disabled:opacity-40 cursor-pointer"
+                            key={t}
+                            onClick={() => setTask(t)}
+                            className={cn(
+                                "py-2.5 rounded-lg text-xs font-medium capitalize transition-all cursor-pointer border",
+                                task === t
+                                    ? "bg-white text-black border-white"
+                                    : "bg-white/[0.03] text-white/40 border-white/[0.06] hover:bg-white/[0.06] hover:text-white/60"
+                            )}
                         >
-                            <Zap className="w-5 h-5" />
-                            Train Model
+                            {t}
                         </button>
-                    ) : (
-                        <div className="space-y-3">
-                            {/* Progress bar */}
-                            <div className="flex items-center gap-3">
-                                <Loader2 className="w-5 h-5 text-emerald-400 animate-spin flex-shrink-0" />
-                                <span className="text-sm text-emerald-300 font-medium">{statusMsg}</span>
-                            </div>
-                            <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full progress-stripe transition-all duration-300"
-                                    style={{ width: `${Math.min(progress, 100)}%` }}
-                                />
-                            </div>
-                            <p className="text-xs text-slate-500">
-                                Training in progress — please don&apos;t close this page.
-                            </p>
-                        </div>
-                    )}
+                    ))}
                 </div>
             </div>
+
+            {/* Model Selector */}
+            {availableModels && (
+                <div className="space-y-2">
+                    <label className="text-[10px] text-white/25 uppercase tracking-wider font-medium flex items-center gap-1.5">
+                        <Zap className="w-3 h-3" />
+                        Model
+                    </label>
+                    <div className="relative">
+                        <select
+                            value={model}
+                            onChange={(e) => setModel(e.target.value)}
+                            className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-4 py-2.5 text-sm text-white/70 appearance-none cursor-pointer focus:outline-none focus:border-white/20 transition"
+                        >
+                            {availableModels.map((m: ModelOption) => (
+                                <option key={m.id} value={m.id} className="bg-[#111] text-white/70">
+                                    {m.name}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none" />
+                    </div>
+                </div>
+            )}
+
+            {/* Cluster count */}
+            {task === "clustering" && (
+                <div className="space-y-2">
+                    <label className="text-[10px] text-white/25 uppercase tracking-wider font-medium">
+                        Number of Clusters
+                    </label>
+                    <div className="flex items-center gap-3">
+                        <input
+                            type="range"
+                            min={2}
+                            max={10}
+                            value={nClusters}
+                            onChange={(e) => setNClusters(+e.target.value)}
+                            className="flex-1 accent-white h-1"
+                        />
+                        <span className="w-8 text-center text-sm font-bold text-white/70 bg-white/[0.04] py-1 rounded-md border border-white/[0.06]">
+                            {nClusters}
+                        </span>
+                    </div>
+                    <p className="text-[10px] text-white/15">
+                        Leave as-is to use the auto-detected optimal K via silhouette analysis
+                    </p>
+                </div>
+            )}
+
+            {/* Train Button */}
+            <div>
+                <button
+                    onClick={handleTrain}
+                    disabled={mutation.isPending || !model}
+                    className={cn(
+                        "w-full py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer",
+                        mutation.isPending
+                            ? "bg-white/10 text-white/50"
+                            : "bg-white text-black hover:bg-white/90"
+                    )}
+                >
+                    {mutation.isPending ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Training…
+                        </>
+                    ) : (
+                        <>
+                            <Play className="w-4 h-4" />
+                            Train Model
+                        </>
+                    )}
+                </button>
+
+                {/* Progress */}
+                {mutation.isPending && (
+                    <div className="mt-3">
+                        <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-white/30 rounded-full transition-all duration-300 progress-stripe"
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                        <p className="text-[10px] text-white/20 mt-1.5 text-center">
+                            {progress < 30 ? "Preprocessing data…" : progress < 70 ? "Fitting model…" : "Computing metrics…"}
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {/* Error */}
+            {mutation.isError && (
+                <div className="flex items-center gap-2 text-red-400/70 text-sm p-4 glass-card border-l-2 border-l-red-500/30">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{(mutation.error as Error).message}</span>
+                </div>
+            )}
         </div>
     );
 }
