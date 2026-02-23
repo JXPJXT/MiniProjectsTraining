@@ -1,20 +1,24 @@
 // ============================================
 // Supabase Client — Server-side (for API routes)
-// Uses service_role key or anon key based on context
 // ============================================
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables!');
+let supabaseServer: SupabaseClient;
+
+if (supabaseUrl && supabaseAnonKey) {
+    supabaseServer = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            persistSession: false,
+        },
+    });
+} else {
+    // During build or when env vars missing, create a dummy that will fail gracefully at runtime
+    console.warn('⚠️ Supabase env vars not set — server client not initialized.');
+    supabaseServer = null as unknown as SupabaseClient;
 }
 
-// Server-side client (used in API routes and server components)
-export const supabaseServer = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-        persistSession: false,
-    },
-});
+export { supabaseServer };

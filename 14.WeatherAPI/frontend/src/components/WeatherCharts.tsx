@@ -89,7 +89,8 @@ export function WeatherCharts({ hourlyData, forecast }: WeatherChartsProps) {
                                         color: 'var(--text)',
                                         fontSize: '13px',
                                     }}
-                                    formatter={(value: number) => [formatTemp(value), '']}
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    formatter={(value: any) => [formatTemp(value as number), '']}
                                 />
                                 <Area type="monotone" dataKey="temp" stroke="#f97316" fill="url(#tempGrad)" strokeWidth={2.5} name="Temperature" dot={false} />
                                 <Area type="monotone" dataKey="feelsLike" stroke="#8b5cf6" fill="url(#feelsGrad)" strokeWidth={1.5} strokeDasharray="5 5" name="Feels Like" dot={false} />
