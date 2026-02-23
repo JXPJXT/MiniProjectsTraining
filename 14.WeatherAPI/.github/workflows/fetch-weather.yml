@@ -1,0 +1,42 @@
+# ============================================
+# GitHub Actions — Weather Data Pipeline
+# Alternative to Render.com Cron Job
+# Runs every 2 hours
+# ============================================
+name: "🌤️ Rajasthan Weather Pipeline"
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"  # Every 2 hours
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  fetch-weather:
+    name: "Fetch Weather & AQI Data"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run weather pipeline
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LOG_LEVEL: INFO
+        run: python backend/preprocess.py
+
+      - name: Pipeline status
+        if: always()
+        run: echo "Pipeline completed with status ${{ job.status }}"

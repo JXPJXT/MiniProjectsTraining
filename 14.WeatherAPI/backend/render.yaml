@@ -1,0 +1,21 @@
+# ============================================
+# Render.com Blueprint — Cron Job
+# ============================================
+services:
+  - type: cron
+    name: rajasthan-weather-pipeline
+    runtime: python
+    region: singapore  # Closest to India
+    plan: free
+    schedule: "0 */2 * * *"  # Every 2 hours
+    buildCommand: pip install -r requirements.txt
+    startCommand: python preprocess.py
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO
+      - key: PYTHON_VERSION
+        value: "3.12.0"
