@@ -1,65 +1,161 @@
-import Image from "next/image";
+// ============================================
+// Main Dashboard Page — Rajasthan Weather Monitor
+// ============================================
 
-export default function Home() {
+'use client';
+
+import { useState } from 'react';
+import { useWeatherData } from '@/hooks/useWeatherData';
+import { Header } from '@/components/Header';
+import { CitySelector } from '@/components/CitySelector';
+import { CurrentConditions } from '@/components/CurrentConditions';
+import { AQIGauge } from '@/components/AQIGauge';
+import { ForecastCard } from '@/components/ForecastCard';
+import { AlertsBanner } from '@/components/AlertsBanner';
+import { WeatherCharts } from '@/components/WeatherCharts';
+import { MonsoonTracker } from '@/components/MonsoonTracker';
+import { HealthTips } from '@/components/HealthTips';
+import { AddCityModal } from '@/components/AddCityModal';
+
+export default function Dashboard() {
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  const [showAddCity, setShowAddCity] = useState(false);
+
+  const {
+    cities,
+    currentWeather,
+    currentAQI,
+    forecast,
+    hourlyData,
+    alerts,
+    loading,
+    error,
+    lastUpdated,
+    refreshData,
+  } = useWeatherData(selectedCityId);
+
+  const selectedCity = cities.find((c) => c.id === (selectedCityId || cities[0]?.id)) || null;
+
+  // Loading state
+  if (loading && !currentWeather) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-content">
+          <div className="loading-spinner" />
+          <h2 className="loading-title">Loading Weather Data...</h2>
+          <p className="loading-subtitle">Fetching data for Rajasthan cities</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="app">
+      <Header lastUpdated={lastUpdated} onRefresh={refreshData} loading={loading} />
+
+      <main className="main-content">
+        {/* Error Banner */}
+        {error && (
+          <div className="error-banner">
+            <span className="error-icon">⚠️</span>
+            <div>
+              <p className="error-text">{error}</p>
+              <p className="error-hint">
+                Make sure you&apos;ve run the database schema and backend pipeline first.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Alerts Banner */}
+        <AlertsBanner alerts={alerts} />
+
+        {/* City Selector */}
+        <CitySelector
+          cities={cities}
+          selectedCityId={selectedCityId || cities[0]?.id || null}
+          onSelectCity={setSelectedCityId}
+          onAddCity={() => setShowAddCity(true)}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+        {/* Main Grid Layout */}
+        <div className="dashboard-grid">
+          {/* Row 1: Current Conditions + AQI */}
+          <div className="grid-row-hero">
+            <CurrentConditions weather={currentWeather} city={selectedCity} />
+            <AQIGauge aqi={currentAQI} />
+          </div>
+
+          {/* Row 2: 7-Day Forecast + Charts */}
+          <div className="grid-row-forecast">
+            <ForecastCard forecast={forecast} />
+            <WeatherCharts hourlyData={hourlyData} forecast={forecast} />
+          </div>
+
+          {/* Row 3: Monsoon + Health Tips */}
+          <div className="grid-row-insights">
+            <MonsoonTracker
+              forecast={forecast}
+              cityName={selectedCity?.name || 'Jaipur'}
+            />
+            <HealthTips aqi={currentAQI} weather={currentWeather} />
+          </div>
+        </div>
+
+        {/* Multi-city overview at bottom */}
+        {cities.length > 1 && (
+          <div className="multi-city-section">
+            <h3 className="section-title">
+              <span className="card-title-icon">🏙️</span>
+              All Cities Overview
+            </h3>
+            <div className="city-overview-grid">
+              {cities.map((city) => {
+                const isSelected = city.id === (selectedCityId || cities[0]?.id);
+                return (
+                  <button
+                    key={city.id}
+                    className={`city-overview-card ${isSelected ? 'selected' : ''}`}
+                    onClick={() => setSelectedCityId(city.id)}
+                  >
+                    <div className="city-overview-header">
+                      <span className="city-overview-name">{city.name}</span>
+                      {city.elevation_m && (
+                        <span className="city-overview-elev">{city.elevation_m}m</span>
+                      )}
+                    </div>
+                    <div className="city-overview-coords">
+                      {city.latitude.toFixed(2)}°N, {city.longitude.toFixed(2)}°E
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="app-footer">
+        <div className="footer-content">
+          <p>
+            🏜️ Rajasthan Weather & Air Quality Monitor — Powered by{' '}
+            <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">
+              Open-Meteo
+            </a>
+          </p>
+          <p className="footer-sub">
+            Data refreshed every 2 hours • Open source • No API key required
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </footer>
+
+      {/* Add City Modal */}
+      <AddCityModal
+        isOpen={showAddCity}
+        onClose={() => setShowAddCity(false)}
+        onCityAdded={refreshData}
+      />
     </div>
   );
 }
