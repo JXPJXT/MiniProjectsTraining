@@ -1,19 +1,18 @@
 """
 Unified FastAPI server for both RAG engines.
-Serves both the Pure Python and LangChain RAG pipelines,
-plus the frontend static files.
+Serves both the Pure Python and LangChain RAG pipelines.
+Frontend is a separate Next.js app connecting to this API.
 """
 import os
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 
 # ─── App Setup ──────────────────────────────────────────
 app = FastAPI(
-    title="StudyDocs RAG System",
+    title="StudyDocs RAG API",
     description="Dual RAG engine — Pure Python & LangChain — over study material PDFs (CS, SE, DS, ML, Networks)",
     version="1.0.0",
 )
@@ -114,25 +113,6 @@ async def query(req: QueryRequest):
     else:
         result = eng.query(req.question, top_k=req.top_k)
         return result
-
-
-# ─── Static Frontend ────────────────────────────────────
-FRONTEND_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "frontend"
-)
-
-@app.get("/")
-async def serve_index():
-    index_path = os.path.join(FRONTEND_DIR, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    return JSONResponse({"error": "Frontend not found"}, status_code=404)
-
-
-# Mount static files (CSS, JS)
-if os.path.exists(FRONTEND_DIR):
-    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 
 # ─── Run ────────────────────────────────────────────────
