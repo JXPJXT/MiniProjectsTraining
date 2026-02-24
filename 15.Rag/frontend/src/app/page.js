@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
 
 const API = "/api";
 
@@ -282,7 +283,7 @@ export default function Home() {
                   <div className="message-avatar">{msg.role === "user" ? "👤" : "🤖"}</div>
                   <div className="message-body">
                     <div className="message-bubble">
-                      {msg.content}
+                      {msg.role === "ai" ? <ReactMarkdown>{msg.content}</ReactMarkdown> : msg.content}
                       {msg.loading && (
                         <span className="typing-indicator">
                           <span className="typing-dot" />

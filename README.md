@@ -3,13 +3,13 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Projects-14-6C63FF?style=for-the-badge" alt="Projects" />
+  <img src="https://img.shields.io/badge/Projects-17-6C63FF?style=for-the-badge" alt="Projects" />
   <img src="https://img.shields.io/badge/Languages-Python%20%7C%20TypeScript%20%7C%20Java-blue?style=for-the-badge" alt="Languages" />
   <img src="https://img.shields.io/badge/Status-Active-00C853?style=for-the-badge" alt="Status" />
 </p>
 
 <p align="center">
-  A comprehensive portfolio of <strong>14 training projects</strong> spanning full-stack web development, AI/ML, real-time systems, and data structures — built with modern frameworks and best practices.
+  A comprehensive portfolio of <strong>17 training projects</strong> spanning full-stack web development, AI/ML, real-time systems, and data structures — built with modern frameworks and best practices.
 </p>
 
 ---
@@ -28,20 +28,21 @@ Training/
 │   ├── 5.Calc-Student-TextEditor → Multi-Tool Flask App
 │   ├── 6.ChatApplication      → Real-Time Chat (WebSockets)
 │   ├── 11.HRMSFS              → HR Management System (40 tables)
-│   └── 12.UMS                 → University Placement Portal
+│   ├── 12.UMS                 → University Placement Portal
+│   └── 14.WeatherAPI          → Rajasthan Weather & AQI Dashboard
 │
 ├── 🤖 AI / ML Projects
 │   ├── 4.MLAPI                → Fruit Predictor API
 │   ├── 7.Agent                → Math AI Agent (ReAct)
 │   ├── 8.VideoGenHF           → AI Video Generator
 │   ├── 9.OCR                  → DL OCR Comparison System
-│   └── 13.MLSELECTOR          → ML Insight Explorer
+│   ├── 13.MLSELECTOR          → ML Insight Explorer
+│   ├── 15.Rag                 → Dual-Engine RAG Study Assistant
+│   └── 16.Ticket-ai-system    → AI Ticket Router
 │
 ├── 🧠 Visualization
-│   └── 10.MindMapHRM          → Interactive HRMS Schema Map
-│
-├── 🌤️ Upcoming
-│   └── 14.WeatherAPI          → Weather API (In Progress)
+│   ├── 10.MindMapHRM          → Interactive HRMS Schema Map
+│   └── 17.Treevis             → GoT Targaryen Lineage Visualizer
 │
 └── 🧩 CodesR                  → Algorithms, DS & Mini-Tools
 ```
@@ -153,7 +154,7 @@ Full CRUD API covering **40 database tables** across every HR domain, with a pre
 </td>
 </tr>
 <tr>
-<td colspan="2">
+<td width="50%">
 
 #### 12. UMS — University Placement Portal 🎓
 **`12.UMS/`**
@@ -168,6 +169,22 @@ Full CRUD API covering **40 database tables** across every HR domain, with a pre
 | **Database** | Supabase PostgreSQL · 15+ tables · pgcrypto auth |
 | **Storage** | Supabase Storage (resumes, certificates, offer letters) |
 | **Run** | Backend: `uvicorn app.main:app --reload` · Frontend: `npm run dev` |
+
+</td>
+<td width="50%">
+
+#### 14. WeatherAPI — Rajasthan Weather & AQI Monitor 🌤️
+**`14.WeatherAPI/`**
+
+Production-ready dashboard for live + forecasted weather and air quality data for major Rajasthan cities with automated data pipelines.
+
+| | |
+|---|---|
+| **Features** | Live weather, 7-day forecast, AQI gauges, heatwave alerts, dust storm monitoring, monsoon tracker, dark mode, PWA |
+| **Stack** | Next.js 14, TypeScript, Tailwind, Recharts, Python 3.12, Polars, Supabase |
+| **Data Source** | Open-Meteo APIs (Weather + Air Quality) |
+| **Deployment** | Vercel (frontend) + Render cron (backend) |
+| **Run** | Backend: `python preprocess.py` · Frontend: `cd frontend && npm run dev` |
 
 </td>
 </tr>
@@ -260,6 +277,42 @@ Offline OCR system for Indian Driving Licenses comparing traditional vs modern V
 
 </td>
 </tr>
+<tr>
+<td colspan="2">
+
+#### 15. StudyDocs RAG — Dual-Engine AI Study Assistant 📚
+**`15.Rag/`**
+
+> **Dual-engine RAG system** — Query study material PDFs locally using two independent implementations: **Pure Python** (zero frameworks) and **LangChain (LCEL)**. Runs 100% offline.
+
+| | |
+|---|---|
+| **Engines** | ⚡ Pure Python (custom chunker, direct HTTP to Ollama) · 🔗 LangChain LCEL pipeline |
+| **LLM** | Ollama `qwen2.5:7b` — 4.7 GB, fully local inference |
+| **Embeddings** | `all-MiniLM-L6-v2` — 384-dim vectors, CPU-optimized |
+| **Vector DB** | ChromaDB (persistent, cosine similarity, HNSW index) |
+| **Frontend** | Next.js 15 — glassmorphism UI, real-time streaming, engine toggle, source citations |
+| **Stack** | FastAPI, PyMuPDF, SentenceTransformers, ChromaDB, Ollama, Next.js 15 |
+| **Run** | Backend: `python -m uvicorn backend.server:app --port 8000 --reload` · Frontend: `cd frontend && npm run dev` |
+
+</td>
+</tr>
+<tr>
+<td colspan="2">
+
+#### 16. AI Ticket Router 🎟️
+**`16.Ticket-ai-system/`**
+
+Automated support ticket routing system that uses AI classification to intelligently assign tickets to the correct department.
+
+| | |
+|---|---|
+| **Features** | Automated intelligent routing, REST API, SQLAlchemy ORM |
+| **Stack** | FastAPI, SQLAlchemy, SQLite/PostgreSQL |
+| **Run** | `uvicorn app.main:app --reload` |
+
+</td>
+</tr>
 </table>
 
 ---
@@ -268,7 +321,7 @@ Offline OCR system for Indian Driving Licenses comparing traditional vs modern V
 
 <table>
 <tr>
-<td>
+<td width="50%">
 
 #### 10. MindMapHRM — Interactive Schema Visualizer
 **`10.MindMapHRM/`**
@@ -281,6 +334,20 @@ Explore the full **40-table HRMS database schema** as a drag-and-drop mind map w
 | **Domains** | Employees, Payroll, Recruitment, Performance, Training, Benefits, Assets, and more |
 | **Stack** | React 19, Vite 7, React Flow 11, Vanilla CSS |
 | **Run** | `npm run dev` → `http://localhost:5173` |
+
+</td>
+<td width="50%">
+
+#### 17. Treevis — GoT Targaryen Lineage Visualizer 🐉
+**`17.Treevis/`**
+
+Interactive **House Targaryen family tree** visualizer with a stunning web UI (fire-themed dark design, D3.js) and a rich ANSI terminal printer.
+
+| | |
+|---|---|
+| **Features** | Interactive HTML tree, search & highlight, node info panel, ANSI color terminal output, tree stats |
+| **Stack** | Python, HTML/CSS/JS, D3.js, Google Fonts (Cinzel) |
+| **Run** | `python got_visualizer.py` → opens browser |
 
 </td>
 </tr>
@@ -297,19 +364,16 @@ Explore the full **40-table HRMS database schema** as a drag-and-drop mind map w
 |---|---|---|---|
 | 1 | `graph.py` | 🦸 **Avengers Compatibility Graph** — weighted directed graph with interactive highlighting | Python |
 | 2 | `got.py` | 🐉 **Royal Lineage CLI** — Targaryen family tree explorer | Python |
-| 3 | `got_visualizer.py` | 🐉 **Royal Lineage Visualizer** — ANSI tree + interactive HTML/D3.js visualization | Python |
-| 4 | `b.py` | 🌳 **Decision Tree Visualizer** — number guessing with path highlighting | Python |
-| 5 | `a.py` | 🤖 **Math Agent Experiment** — Ollama-based math solver prototype | Python |
-| 6 | `a (2).py` | 🌲 **BST Graph Drawer** — NetworkX binary search tree visualization | Python |
-| 7 | `hp.py` | 🗂️ **Custom Hash Map** — chaining collision resolution | Python |
-| 8 | `queue.py` | 🎫 **Ticket Management System** — circular queue with CLI | Python |
-| 9 | `app.py` | ⚡ **Flask + Uvicorn Demo** — WSGI→ASGI bridge demo | Python |
-| 10 | `bst.java` | 🌲 **Binary Search Tree** — full BST implementation | Java |
-| 11 | `dp/ClimbStairs.java` | 🧗 **Climbing Stairs** — Recursion, Memo, Tabulation | Java |
-| 12 | `dp/fib.java` | 🔢 **Fibonacci** — Memoization & Tabulation | Java |
-| 13 | `a.html` | 🌧️ **Rain Water Trapping Visualizer** — Canvas step-through animation | HTML/JS |
-| 14 | `targaryen_lineage.html` | 🐉 **Targaryen Family Tree** — interactive browser visualization | HTML/JS |
-| 15 | `ticket-ai-system/` | 🎟️ **AI Ticket Router** — FastAPI scaffold for intelligent ticket routing | Python |
+| 3 | `b.py` | 🌳 **Decision Tree Visualizer** — number guessing with path highlighting | Python |
+| 4 | `a.py` | 🤖 **Math Agent Experiment** — Ollama-based math solver prototype | Python |
+| 5 | `a (2).py` | 🌲 **BST Graph Drawer** — NetworkX binary search tree visualization | Python |
+| 6 | `hp.py` | 🗂️ **Custom Hash Map** — chaining collision resolution | Python |
+| 7 | `queue.py` | 🎫 **Ticket Management System** — circular queue with CLI | Python |
+| 8 | `app.py` | ⚡ **Flask + Uvicorn Demo** — WSGI→ASGI bridge demo | Python |
+| 9 | `bst.java` | 🌲 **Binary Search Tree** — full BST implementation | Java |
+| 10 | `dp/ClimbStairs.java` | 🧗 **Climbing Stairs** — Recursion, Memo, Tabulation | Java |
+| 11 | `dp/fib.java` | 🔢 **Fibonacci** — Memoization & Tabulation | Java |
+| 12 | `a.html` | 🌧️ **Rain Water Trapping Visualizer** — Canvas step-through animation | HTML/JS |
 
 ---
 
@@ -319,11 +383,11 @@ Explore the full **40-table HRMS database schema** as a drag-and-drop mind map w
 <tr>
 <td align="center" width="14%"><strong>🐍 Python</strong><br/><sub>FastAPI, Flask</sub></td>
 <td align="center" width="14%"><strong>⚛️ React</strong><br/><sub>Next.js, Vite</sub></td>
-<td align="center" width="14%"><strong>🤖 ML/AI</strong><br/><sub>scikit-learn, Transformers</sub></td>
-<td align="center" width="14%"><strong>🗄️ Databases</strong><br/><sub>PostgreSQL, MongoDB, SQLite, Supabase</sub></td>
+<td align="center" width="14%"><strong>🤖 ML/AI</strong><br/><sub>scikit-learn, Transformers, LangChain, Ollama</sub></td>
+<td align="center" width="14%"><strong>🗄️ Databases</strong><br/><sub>PostgreSQL, MongoDB, SQLite, Supabase, ChromaDB</sub></td>
 <td align="center" width="14%"><strong>🔐 Auth</strong><br/><sub>JWT, Google OAuth, RBAC</sub></td>
-<td align="center" width="14%"><strong>📡 Real-Time</strong><br/><sub>WebSockets, Motor</sub></td>
-<td align="center" width="14%"><strong>🎨 Frontend</strong><br/><sub>TypeScript, Tailwind, CSS</sub></td>
+<td align="center" width="14%"><strong>📡 Real-Time</strong><br/><sub>WebSockets, SSE, Motor</sub></td>
+<td align="center" width="14%"><strong>🎨 Frontend</strong><br/><sub>TypeScript, Tailwind, CSS, D3.js</sub></td>
 </tr>
 </table>
 
@@ -364,7 +428,10 @@ npm run dev
 | 11. HRMSFS | `8000` | `5173` | Supabase |
 | 12. UMS | `8000` | `3000` | Supabase |
 | 13. MLSELECTOR | `8000` | `3000` | — |
-| 14. WeatherAPI | 🔜 | 🔜 | 🔜 |
+| 14. WeatherAPI | Cron | `3000` | Supabase |
+| 15. Rag | `8000` | `3000` | ChromaDB |
+| 16. Ticket-ai-system | `8000` | — | SQLite |
+| 17. Treevis | — | Browser | — |
 
 ---
 
@@ -376,15 +443,19 @@ npm run dev
   1.     ██░░░░░░░░░░   SheetsApi                       │
   2.     ███░░░░░░░░░   GoogleSheetsLLM                 │
   4.     ███░░░░░░░░░   MLAPI                           │
+ 16.     ████░░░░░░░░   Ticket-ai-system                │
   5.     ████░░░░░░░░   Calc-Student-TextEditor          │
   3.     █████░░░░░░░   LMS                              │
   7.     █████░░░░░░░   Agent                            │
+ 17.     █████░░░░░░░   Treevis                          │
   8.     ██████░░░░░░   VideoGenHF                       │
  10.     ██████░░░░░░   MindMapHRM                       │
   6.     ███████░░░░░   ChatApplication                  │
   9.     ████████░░░░   OCR                              │
+ 14.     ████████░░░░   WeatherAPI                       │
  11.     █████████░░░   HRMSFS                           │
  13.     █████████░░░   MLSELECTOR                       │
+ 15.     █████████░░░   StudyDocs RAG                    │
  12.     ██████████░░   UMS (Placement Portal)           │
          │                                              │
          └──────────────────────────────────────────────┘
