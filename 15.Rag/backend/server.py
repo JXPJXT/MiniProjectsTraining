@@ -13,8 +13,8 @@ from typing import Optional
 
 # ─── App Setup ──────────────────────────────────────────
 app = FastAPI(
-    title="GovDocs RAG System",
-    description="Dual RAG engine — Pure Python & LangChain — over .gov PDF documents",
+    title="StudyDocs RAG System",
+    description="Dual RAG engine — Pure Python & LangChain — over study material PDFs (CS, SE, DS, ML, Networks)",
     version="1.0.0",
 )
 
@@ -62,7 +62,7 @@ def get_engine(name: str):
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "message": "GovDocs RAG Server is running"}
+    return {"status": "ok", "message": "StudyDocs RAG Server is running"}
 
 
 @app.get("/api/status/{engine}")

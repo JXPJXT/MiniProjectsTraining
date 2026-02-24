@@ -30,10 +30,12 @@ import requests
 
 # ─── Prompt Template ────────────────────────────────────
 RAG_PROMPT = PromptTemplate(
-    template="""You are a helpful assistant that answers questions based on U.S. government PDF documents.
+    template="""You are a knowledgeable study assistant that answers questions based on academic and technical PDF documents.
+The documents cover topics like Software Engineering, Data Structures, Algorithms, Computer Networks,
+Operating Systems, Machine Learning, Python programming, Web Development, and other CS fundamentals.
 You MUST answer based ONLY on the provided context. If the context doesn't contain enough information, say so clearly.
 Always cite the source document filenames when possible.
-Be concise but thorough.
+Be concise but thorough. Use clear explanations suitable for a student learning these topics.
 
 ### Context:
 {context}
@@ -88,7 +90,7 @@ class LangChainRAGEngine:
     def vectorstore(self):
         if self._vectorstore is None:
             self._vectorstore = Chroma(
-                collection_name="gov_pdfs_langchain",
+                collection_name="study_pdfs_langchain",
                 embedding_function=self.embeddings,
                 persist_directory=CHROMA_LC_DIR,
                 collection_metadata={"hnsw:space": "cosine"},

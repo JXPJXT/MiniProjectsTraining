@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════
-   GovDocs RAG — Frontend Logic
+   StudyDocs RAG — Frontend Logic
    ══════════════════════════════════════════════════════ */
 
 const API_BASE = window.location.origin;
@@ -143,12 +143,12 @@ async function handleIngest() {
     els.btnIngest.disabled = true;
     els.ingestPanel.style.display = "block";
     els.ingestPanel.className = "ingest-panel";
-    els.ingestTitle.textContent = "Ingesting Documents...";
+    els.ingestTitle.textContent = "Ingesting Study Materials...";
     els.ingestMessage.textContent =
         `Processing PDFs for ${state.engine === "pure" ? "Pure Python" : "LangChain"} engine`;
     els.progressBar.style.width = "10%";
 
-    // Animate progress fake
+    // Animate progress
     let progress = 10;
     const interval = setInterval(() => {
         progress = Math.min(progress + Math.random() * 5, 85);
@@ -172,7 +172,7 @@ async function handleIngest() {
         els.progressBar.style.width = "100%";
         els.ingestPanel.classList.add("success");
         els.ingestTitle.textContent = "✓ Ingestion Complete";
-        els.ingestMessage.textContent = result.message || "Documents indexed successfully.";
+        els.ingestMessage.textContent = result.message || "Study materials indexed successfully.";
 
         // Auto-hide after 5s
         setTimeout(() => {
@@ -347,7 +347,7 @@ function renderSources(container, sources) {
             .map(
                 (s) => `
                     <div class="source-item">
-                        <span class="source-file">📄 ${escapeHtml(truncate(s.filename, 30))}</span>
+                        <span class="source-file">📄 ${escapeHtml(truncate(s.filename, 40))}</span>
                         ${s.score ? `<span class="source-score">${(s.score * 100).toFixed(1)}%</span>` : ""}
                         <span class="source-snippet">${escapeHtml(truncate(s.snippet, 120))}</span>
                     </div>

@@ -16,10 +16,12 @@ from .vector_store import get_vector_store
 
 
 # ─── System Prompt ──────────────────────────────────────
-SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on U.S. government PDF documents.
+SYSTEM_PROMPT = """You are a knowledgeable study assistant that answers questions based on academic and technical PDF documents.
+The documents cover topics like Software Engineering, Data Structures, Algorithms, Computer Networks,
+Operating Systems, Machine Learning, Python programming, Web Development, and other CS fundamentals.
 You MUST answer based ONLY on the provided context. If the context doesn't contain enough information, say so clearly.
 Always cite the source document filenames when possible.
-Be concise but thorough."""
+Be concise but thorough. Use clear explanations suitable for a student learning these topics."""
 
 
 def _build_prompt(query: str, context_chunks: List[Dict]) -> str:

@@ -9,7 +9,7 @@ from ..common.config import CHROMA_PURE_DIR, TOP_K
 from .embeddings import get_embedding_engine
 
 
-COLLECTION_NAME = "gov_pdfs_pure"
+COLLECTION_NAME = "study_pdfs_pure"
 
 
 class VectorStore:

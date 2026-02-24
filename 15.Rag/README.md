@@ -1,131 +1,122 @@
-# 🏛️ GovDocs RAG — Dual Engine AI Document Intelligence
+# 📚 StudyDocs RAG — AI Study Assistant
 
-> **Offline-first** Retrieval Augmented Generation system that queries 1,000 U.S. government PDF documents using **two separate RAG implementations** — one built **from scratch** (pure Python) and one with **LangChain** — both powered by **Ollama qwen2.5:7b** running locally.
+A **dual-engine Retrieval Augmented Generation (RAG) system** for querying study material PDFs locally. Features two independent RAG implementations — **Pure Python** (no frameworks) and **LangChain** — with a shared premium frontend.
 
----
+## 🎯 What It Does
+
+Upload your CS study PDFs (Software Engineering, Data Structures, OS, Computer Networks, ML, Python, etc.) and ask questions. The system retrieves relevant context from your documents and generates answers using a local LLM.
 
 ## 🏗️ Architecture
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                 Sleek Web Frontend                    │
-│          (HTML/CSS/JS • Glassmorphism UI)             │
-├──────────────┬───────────────────────────────────────┤
-│              │          FastAPI Server                │
-│              ├───────────────┬───────────────────────┤
-│              │  Pure Python  │      LangChain         │
-│              │    RAG ⚡     │        RAG 🔗          │
-│              ├───────────────┴───────────────────────┤
-│              │        Shared Utilities                │
-│              │   (PDF Processor • Config)             │
-├──────────────┴───────────────────────────────────────┤
-│  ChromaDB (Vector Store)  │  Ollama qwen2.5:7b (LLM) │
-│  sentence-transformers    │  (localhost:11434)         │
-│  (all-MiniLM-L6-v2)      │                           │
-└──────────────────────────────────────────────────────┘
+15.Rag/
+├── datasets/                  # Study material PDFs (45 books)
+├── backend/
+│   ├── common/
+│   │   ├── config.py          # Shared config (Ollama, embeddings, chunking)
+│   │   └── pdf_processor.py   # PyMuPDF-based PDF text extraction
+│   ├── rag_pure/              # Pure Python RAG (zero frameworks)
+│   │   ├── chunker.py         # Custom sentence-aware text chunking
+│   │   ├── embeddings.py      # Sentence-transformers embeddings
+│   │   ├── vector_store.py    # ChromaDB direct client
+│   │   └── engine.py          # Full RAG pipeline orchestrator
+│   ├── rag_langchain/         # LangChain RAG
+│   │   └── engine.py          # LangChain-based RAG pipeline
+│   ├── server.py              # FastAPI unified API server
+│   └── requirements.txt       # Python dependencies
+├── frontend/
+│   ├── index.html             # Premium glassmorphism UI
+│   ├── style.css              # Full design system (dark/light themes)
+│   └── script.js              # Chat interface with streaming
+└── README.md
 ```
 
 ## 🔧 Tech Stack
 
-| Component          | Pure Python RAG           | LangChain RAG                  |
-|--------------------|---------------------------|--------------------------------|
-| PDF Parsing        | PyMuPDF (fitz)            | LangChain PyMuPDFLoader        |
-| Text Chunking      | Custom sentence-aware     | RecursiveCharacterTextSplitter |
-| Embeddings         | sentence-transformers     | HuggingFaceEmbeddings          |
-| Vector Store       | ChromaDB (direct client)  | ChromaDB (LangChain wrapper)   |
-| LLM Inference      | Ollama REST API (requests)| LangChain OllamaLLM            |
-| Streaming          | Direct HTTP streaming     | Direct HTTP streaming          |
+| Component | Technology | Notes |
+|-----------|-----------|-------|
+| **LLM** | Ollama `qwen2.5:7b` | 4.7GB, runs locally |
+| **Embeddings** | `all-MiniLM-L6-v2` | 80MB, CPU-optimized |
+| **Vector DB** | ChromaDB | Persistent, local storage |
+| **PDF Parser** | PyMuPDF (fitz) | Fast C-backed parser |
+| **API Server** | FastAPI + Uvicorn | Async, streaming support |
+| **Frontend** | Vanilla HTML/CSS/JS | No build step required |
 
-## 🖥️ Hardware Requirements
+**Optimized for:** i5-13450HX + RTX 3050 6GB (runs entirely offline)
 
-Optimized for your setup:
-- **CPU**: i5-13450HX (embeddings run on CPU)
-- **GPU**: RTX 3050 6GB (Ollama uses GPU for inference)
-- **RAM**: ~4.7 GB for qwen2.5:7b + ~80 MB for embeddings
-- **Fully offline** — no internet required after initial setup
+## 📖 Study Materials Included
+
+45 PDFs covering:
+- **Software Engineering** — SDLC, architecture patterns, practitioner's approach
+- **Data Structures & Algorithms** — Linked lists, sorting, trees, complexity analysis  
+- **Computer Networks** — TCP/IP, OSI model, data communications
+- **Machine Learning** — Supervised/unsupervised, scikit-learn, TensorFlow
+- **Python** — Crash courses, data structures, decorators, OOP
+- **Web Development** — HTML/CSS, React, MERN stack, full-stack projects
+- **Computer Organization** — Architecture, hardware fundamentals
 
 ## 🚀 Quick Start
 
-### 1. Prerequisites
-```bash
-# Make sure Ollama is running with qwen2.5:7b
-ollama serve
-ollama pull qwen2.5:7b  # if not already pulled
-```
+### Prerequisites
+- Python 3.10+
+- [Ollama](https://ollama.ai) installed with `qwen2.5:7b` model
 
-### 2. Install Dependencies
+### 1. Install Dependencies
 ```bash
 cd 15.Rag
 pip install -r backend/requirements.txt
 ```
 
-### 3. Add PDFs
-Place your `.gov` PDF files into the `datasets/` folder.
+### 2. Start Ollama
+```bash
+ollama serve
+```
 
-### 4. Run the Server
+### 3. Run the Server
 ```bash
 python -m uvicorn backend.server:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 5. Open the UI
-Navigate to **http://localhost:8000** in your browser.
+### 4. Open in Browser
+Navigate to `http://localhost:8000`
 
-### 6. Ingest & Query
-1. Select an engine (Pure Python or LangChain)
-2. Click **Ingest PDFs** to process the documents
-3. Start asking questions!
+### 5. Ingest & Query
+1. Click **"Ingest PDFs"** to index your study materials
+2. Select engine (**Pure Python** or **LangChain**)
+3. Ask questions about SE, DSA, OS, CN, ML, Python, etc.
 
-## 📁 Project Structure
+## 🔄 Two RAG Engines Compared
 
-```
-15.Rag/
-├── datasets/                  # Place your PDFs here
-├── vectorstore_pure/          # ChromaDB data (pure engine)
-├── vectorstore_langchain/     # ChromaDB data (LangChain engine)
-├── backend/
-│   ├── common/
-│   │   ├── config.py          # Central configuration
-│   │   └── pdf_processor.py   # Shared PDF extraction
-│   ├── rag_pure/              # 🔥 Framework-free RAG
-│   │   ├── chunker.py         # Custom text splitter
-│   │   ├── embeddings.py      # sentence-transformers wrapper
-│   │   ├── vector_store.py    # ChromaDB direct client
-│   │   └── engine.py          # Full RAG pipeline
-│   ├── rag_langchain/         # 🔗 LangChain RAG
-│   │   └── engine.py          # LangChain pipeline
-│   ├── server.py              # FastAPI unified API
-│   └── requirements.txt
-├── frontend/
-│   ├── index.html
-│   ├── style.css
-│   └── script.js
-└── README.md
-```
+### ⚡ Pure Python Engine
+- **No framework dependencies** — built from scratch
+- Direct HTTP calls to Ollama REST API
+- Custom sentence-aware text chunking
+- Direct ChromaDB Python client
+- Full control over every RAG pipeline step
 
-## 🔌 API Endpoints
+### 🔗 LangChain Engine
+- Uses LangChain ecosystem (loaders, splitters, chains)
+- `RetrievalQA` chain with `stuff` strategy
+- LangChain's `HuggingFaceEmbeddings` wrapper
+- Chroma via LangChain integration
+- Framework-managed pipeline orchestration
 
-| Method | Endpoint              | Description                    |
-|--------|-----------------------|--------------------------------|
-| GET    | `/api/health`         | Health check                   |
-| GET    | `/api/status`         | Both engines status            |
-| GET    | `/api/status/{engine}`| Specific engine status         |
-| POST   | `/api/ingest`         | Ingest PDFs into vector store  |
-| POST   | `/api/query`          | Query with streaming support   |
+## 📡 API Endpoints
 
-### Example Query
-```bash
-curl -X POST http://localhost:8000/api/query \
-  -H "Content-Type: application/json" \
-  -d '{"question": "What government services are described?", "engine": "pure", "stream": false}'
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/health` | Server health check |
+| `GET` | `/api/status` | Status of both engines |
+| `GET` | `/api/status/{engine}` | Status of specific engine |
+| `POST` | `/api/ingest` | Ingest PDFs into vector store |
+| `POST` | `/api/query` | Query with streaming support |
 
-## 📊 Dataset
+## 🎨 Frontend Features
 
-**One Thousand .gov PDF Dataset** from the Library of Congress Web Archiving Program:
-- 1,000 unique PDF files from `.gov` domains
-- Includes government reports, forms, policies, and data
-- Originally created 11/6/2018
-
----
-
-*Built with ❤️ — Fully offline, fully local, zero cloud dependencies.*
+- **Dark/Light theme** toggle with smooth transitions
+- **Glassmorphism** design with animated background orbs
+- **Real-time streaming** — tokens appear as they're generated
+- **Source citations** — expandable panel showing retrieved chunks
+- **Engine switching** — toggle between Pure Python and LangChain
+- **Performance metrics** — response time and source count
+- **Responsive** — works on mobile and desktop

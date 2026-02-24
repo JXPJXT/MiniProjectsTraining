@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="GovDocs RAG — Dual engine retrieval augmented generation over U.S. government PDF documents. Powered by Ollama and qwen2.5:7b.">
-    <title>GovDocs RAG — AI Document Intelligence</title>
+        content="StudyDocs RAG — Dual engine retrieval augmented generation over CS study material PDFs. Powered by Ollama qwen2.5:7b running locally.">
+    <title>StudyDocs RAG — AI Study Assistant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -47,8 +47,8 @@
                     </svg>
                 </div>
                 <div class="header-title">
-                    <h1>GovDocs <span class="accent">RAG</span></h1>
-                    <p class="subtitle">AI-Powered Document Intelligence</p>
+                    <h1>StudyDocs <span class="accent">RAG</span></h1>
+                    <p class="subtitle">AI-Powered Study Assistant</p>
                 </div>
             </div>
             <div class="header-right">
@@ -141,25 +141,34 @@
                         </defs>
                     </svg>
                 </div>
-                <h2>Ask anything about U.S. Government Documents</h2>
+                <h2>Ask anything about your Study Materials</h2>
                 <p>Powered by <strong>Ollama qwen2.5:7b</strong> running locally on your machine.<br>
+                    Covers CS fundamentals — SE, OS, CN, DSA, ML, Python & more.<br>
                     Choose an engine above, ingest your PDFs, then start asking questions.</p>
                 <div class="example-queries">
                     <button class="example-query"
-                        data-query="What types of government services are documented in these PDFs?">
-                        🏛️ Government services overview
+                        data-query="Explain the different software development life cycle models and their differences.">
+                        🛠️ Software Engineering SDLC
                     </button>
                     <button class="example-query"
-                        data-query="Summarize the key policies mentioned across the documents.">
-                        📋 Key policies summary
+                        data-query="What is the OSI model? Explain each layer with its functions.">
+                        🌐 OSI Model Layers
                     </button>
                     <button class="example-query"
-                        data-query="What data collection practices are described in these documents?">
-                        📊 Data collection practices
+                        data-query="Explain the time complexity of common sorting algorithms like quicksort, mergesort, and heapsort.">
+                        📊 Sorting Algorithms
                     </button>
                     <button class="example-query"
-                        data-query="Are there any accessibility guidelines mentioned in the documents?">
-                        ♿ Accessibility guidelines
+                        data-query="What are the key differences between supervised and unsupervised machine learning?">
+                        🤖 ML Fundamentals
+                    </button>
+                    <button class="example-query"
+                        data-query="Explain the concept of process scheduling in operating systems. What are the different scheduling algorithms?">
+                        ⚙️ OS Process Scheduling
+                    </button>
+                    <button class="example-query"
+                        data-query="What are Python decorators and how do they work? Give examples.">
+                        🐍 Python Decorators
                     </button>
                 </div>
             </div>
@@ -171,7 +180,7 @@
         <!-- ═══ Input Bar ═══ -->
         <div class="input-bar" id="input-bar">
             <div class="input-wrapper">
-                <textarea id="query-input" placeholder="Ask a question about the government documents..." rows="1"
+                <textarea id="query-input" placeholder="Ask about SE, DSA, OS, CN, ML, Python..." rows="1"
                     maxlength="2000" aria-label="Ask a question"></textarea>
                 <button class="btn-send" id="btn-send" title="Send query" aria-label="Send query">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
