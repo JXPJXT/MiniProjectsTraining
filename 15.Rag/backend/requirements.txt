@@ -1,0 +1,26 @@
+# Core dependencies
+fastapi==0.115.0
+uvicorn==0.30.6
+python-multipart==0.0.9
+
+# PDF Processing
+PyMuPDF==1.24.9
+
+# Embeddings
+sentence-transformers==3.0.1
+
+# Vector Store
+chromadb==0.5.5
+
+# Ollama
+ollama==0.3.3
+requests==2.32.3
+
+# LangChain RAG
+langchain==0.3.1
+langchain-community==0.3.1
+langchain-ollama==0.2.0
+langchain-chroma==0.1.4
+
+# CORS
+pydantic==2.9.2

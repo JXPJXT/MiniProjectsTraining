@@ -16,7 +16,6 @@ if (supabaseUrl && supabaseAnonKey) {
         },
     });
 } else {
-    // During build or when env vars missing, create a dummy that will fail gracefully at runtime
     console.warn('⚠️ Supabase env vars not set — server client not initialized.');
     supabaseServer = null as unknown as SupabaseClient;
 }

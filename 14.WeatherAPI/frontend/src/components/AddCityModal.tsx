@@ -1,6 +1,6 @@
 // ============================================
 // Add City Modal Component
-// Add custom city by coordinates
+// Add custom city by coordinates (writes to Supabase)
 // ============================================
 
 'use client';
@@ -73,7 +73,7 @@ export function AddCityModal({ isOpen, onClose, onCityAdded }: AddCityModalProps
             setElevation('');
             onCityAdded();
             onClose();
-        } catch (err) {
+        } catch {
             setError('Failed to add city. Please try again.');
         } finally {
             setLoading(false);

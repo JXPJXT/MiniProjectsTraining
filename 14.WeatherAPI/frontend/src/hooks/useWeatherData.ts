@@ -1,6 +1,6 @@
 // ============================================
 // Custom Hook: useWeatherData
-// Fetches all weather, AQI, forecast, and alert data
+// Fetches all weather, AQI, forecast, and alert data from Supabase
 // ============================================
 
 'use client';
