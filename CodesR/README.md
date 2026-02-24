@@ -17,7 +17,6 @@
 |---|---|---|---|
 | `graph.py` | **🦸 Avengers Compatibility Graph** | Interactive weighted directed graph showing combat synergy between 6 Avengers. Circular layout, dynamic edge coloring, and node highlighting. Iron Man "self-centered" mode. | `networkx`, `matplotlib` |
 | `got.py` | **🐉 Royal Lineage CLI** | CLI tool to explore the Game of Thrones Targaryen family tree. Query parents, children, ancestors, and descendants. | Python (Tree DS) |
-| `got_visualizer.py` | **🐉 Royal Lineage Visualizer** | Enhanced version with 1000+ lines: ANSI-colored terminal trees, statistics, and an **interactive HTML visualization** that opens in the browser with a full drag-and-drop D3.js family tree. | Python, HTML/JS |
 | `b.py` | **🌳 Decision Tree Visualizer** | Interactive decision tree that guesses a number (0–10) and visualizes the traversal path in real-time with highlighted nodes. | `networkx`, `matplotlib` |
 | `a.py` | **🤖 Math Agent Experiment** | Prototype AI agent using Ollama to solve math problems by parsing natural language and calling Python functions (ReAct pattern). | `ollama` |
 | `a (2).py` | **🌲 BST Visualizer** | Quick script to draw a binary search tree graph using NetworkX with custom node positioning. | `networkx`, `matplotlib` |
@@ -43,24 +42,6 @@
 | File | Description |
 |---|---|
 | `a.html` | **🌧️ Rain Water Trapping Visualizer** — Interactive Canvas-based step-through visualizer for the two-pointer rain water trapping algorithm. Features play/pause animation, speed control, and pointer tracking stats. |
-| `targaryen_lineage.html` | **🐉 Targaryen Family Tree** — Generated HTML visualization of the Targaryen lineage (output from `got_visualizer.py`). |
-
-### 📁 `ticket-ai-system/` — AI Ticket Router
-
-A structured **FastAPI** project scaffold for intelligent support ticket routing and classification.
-
-```
-ticket-ai-system/
-├── app/
-│   ├── main.py          # FastAPI entry point
-│   ├── models/          # Data models
-│   ├── routes/          # API routes
-│   └── services/        # Business logic
-├── tests/               # Test suite
-└── requirements.txt     # Dependencies
-```
-
-**Tech:** FastAPI, SQLAlchemy
 
 ---
 
@@ -77,9 +58,6 @@ python graph.py
 
 # Run GOT Lineage (CLI)
 python got.py
-
-# Run GOT Visualizer (opens browser)
-python got_visualizer.py
 
 # Run Decision Tree
 python b.py
@@ -108,9 +86,19 @@ javac fib.java && java fib
 
 ```bash
 # Open directly in browser
-start a.html                    # Rain Water Trapping
-start targaryen_lineage.html    # Targaryen Family Tree
+start a.html    # Rain Water Trapping
 ```
+
+---
+
+## 🔗 Graduated Projects
+
+The following items started in CodesR and have been promoted to their own standalone projects:
+
+| Original | Now | Description |
+|---|---|---|
+| `got_visualizer.py` + `targaryen_lineage.html` | [`17.Treevis/`](../17.Treevis/) | 🐉 Enhanced GoT Lineage Visualizer with interactive HTML |
+| `ticket-ai-system/` | [`16.Ticket-ai-system/`](../16.Ticket-ai-system/) | 🎟️ AI Ticket Router with ML classification |
 
 ---
 
